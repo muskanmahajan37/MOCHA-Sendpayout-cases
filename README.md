@@ -1,2 +1,2 @@
-# MOCHA-Sendpayput
+# MOCHA-Sendpayout
 Sendpayout cases
