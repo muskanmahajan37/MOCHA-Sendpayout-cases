@@ -645,6 +645,8 @@ chai.use(require('chai-things'));
 const SendPayoutRequest_Schema = require('../../schema-mapping/sendPayoutRequest_Schema');
 const sendPayoutRequest_first='../../apigee-mapping-scripts/send-payout-to-psp-request-mapping-part-1';
 const sendPayoutRequest_second='../../apigee-mapping-scripts/send-payout-to-psp-request-mapping-part-2';
+const sendPayoutRequest_third='../../apigee-mapping-scripts/send-payout-to-psp-request-mapping-part-3.js';
+
 
 var sinon = require('sinon');
 const { error } = require('console');
@@ -833,6 +835,197 @@ module.exports = {
                       expect(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:beneficiaryIndividualIdentity"]).to.be.undefined;
                     }
                   }
+
+                  done();
+                }).timeout(5000);
+
+
+                it('IdentificationList -- idType',(done)=>{
+                  contextGetVariableMethod.withArgs("request.content").returns(JSON.stringify(SendPayoutRequest_Schema.request));
+                  cryptoGetSHA256.withArgs().returns(module.exports={
+                      update:function (){},
+                      digest:function (){return "12345678654sdfghj"}});
+                  _sha256Update.withArgs().returns();
+                  _sha256digest.withArgs().returns();
+                  loadJS(sendPayoutRequest_first);
+                  var latestRequest =JSON.parse(contextVars["private.earthportRequest"]);
+                  contextGetVariableMethod.withArgs("private.originalRequest").returns(JSON.stringify(SendPayoutRequest_Schema.request));
+                  contextGetVariableMethod.withArgs("private.earthportRequest").returns(JSON.stringify(latestRequest));
+                  loadJS(sendPayoutRequest_second);
+                  var latestRequest =JSON.parse(contextVars["private.earthportRequest"]);
+                  contextGetVariableMethod.withArgs("private.originalRequest").returns(JSON.stringify(SendPayoutRequest_Schema.request));
+                  contextGetVariableMethod.withArgs("private.earthportRequest").returns(JSON.stringify(latestRequest));
+                  loadJS(sendPayoutRequest_third);
+                  var latestRequest =JSON.parse(contextVars["request.content"]);
+                  //CASES FOR TYPE -- I  
+                  // var ident_list_I = (latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]['ns13:beneficiaryBankAccount']['ns4:beneficiaryIdentity']['ns3:beneficiaryIndividualIdentity']['ns3:identificationList']['ns3:identification'])
+                  //   var Send_ident_I = SendPayoutRequest_Schema.request.recipientDetail.identificationList
+                    // var cutIT = Send_ident_I.find(val => val.idType === 'P' || 'D' || 'N')
+                    // console.log(cutIT)
+                    // var logic = ident_list_I.find(obj => obj['ns3:idType'] === 'P' || 'D' || 'N')
+                    // console.log(logic)
+                    // CASES FOR TYPE -- C
+                    // var ident_list_C = (latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]['ns13:beneficiaryBankAccount']['ns4:beneficiaryIdentity']['ns3:beneficiaryLegalEntityIdentity']['ns3:legalEntityRegistration'])
+                    // console.log(ident_list_C)
+                    // var Send_ident_C = SendPayoutRequest_Schema.request.recipientDetail.identificationList
+                    // var mmm = Send_ident_C.find(val => val.idType === 'L')
+                    // console.log(mmm)
+                    if('recipientDetail' in SendPayoutRequest_Schema.request){
+                      if(SendPayoutRequest_Schema.request.recipientDetail.type === 'I'){
+                    var ident_list_I = (latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]['ns13:beneficiaryBankAccount']['ns4:beneficiaryIdentity']['ns3:beneficiaryIndividualIdentity']['ns3:identificationList']['ns3:identification'])
+                    var Send_ident_I = SendPayoutRequest_Schema.request.recipientDetail.identificationList
+                    var cutIT = Send_ident_I.find(val => val.idType)
+                    console.log(cutIT)
+                    var list = ['P','D','N']
+                    var mapped_list = ['Passport','Driving License','National ID Card']
+                    var logic = ident_list_I.find(obj => obj['ns3:idType'])
+                        console.log(logic)
+                    if('identificationList' in SendPayoutRequest_Schema.request.recipientDetail){
+                      if(cutIT !== undefined){
+                        if('idType' in cutIT){
+                          if(list.indexOf(cutIT.idType) > -1){
+  
+                          expect(logic['ns3:idType']).to.be.oneOf(mapped_list)
+                        }
+                        else{
+                          expect(logic['ns3:idType']).to.be.eql(cutIT.idType)
+                        }
+                        }
+                      }
+                      else{
+                        expect(logic).to.be.undefined
+                      }
+
+                      
+
+                    }
+                    else{
+                      expect(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]['ns13:beneficiaryBankAccount']['ns4:beneficiaryIdentity']['ns3:beneficiaryIndividualIdentity']['ns3:identificationList']).to.be.undefined
+                    }
+              
+
+                      }
+                      else if(SendPayoutRequest_Schema.request.recipientDetail.type === 'C'){
+                         var ident_list_C = (latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]['ns13:beneficiaryBankAccount']['ns4:beneficiaryIdentity']['ns3:beneficiaryLegalEntityIdentity']['ns3:legalEntityRegistration'])
+                    console.log(ident_list_C)
+                    var Send_ident_C = SendPayoutRequest_Schema.request.recipientDetail.identificationList
+                    var mmm = Send_ident_C.find(val => val.idType)
+                    console.log(mmm)
+                        if('identificationList' in SendPayoutRequest_Schema.request.recipientDetail){
+                          if(mmm !== undefined){
+
+                            if(mmm.idType === 'L'){
+                              expect(ident_list_C).to.be.not.undefined
+                            }
+                            else{
+                              expect(ident_list_C).to.be.undefined
+                            }
+                          }
+                        
+                          else{
+                            expect(ident_list_C).to.be.undefined
+                          }
+
+                        }
+                        else{
+                          expect(ident_list_C).to.be.undefined
+                        }
+                      }
+                      else{
+                        expect(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]['ns13:beneficiaryBankAccount']['ns4:beneficiaryIdentity']).to.be.not.undefined;
+
+                      }
+                    }
+                    
+
+                  done();
+                }).timeout(5000);
+
+
+                it('IdentificationList -- idNumber',(done)=>{
+                  contextGetVariableMethod.withArgs("request.content").returns(JSON.stringify(SendPayoutRequest_Schema.request));
+                  cryptoGetSHA256.withArgs().returns(module.exports={
+                      update:function (){},
+                      digest:function (){return "12345678654sdfghj"}});
+                  _sha256Update.withArgs().returns();
+                  _sha256digest.withArgs().returns();
+                  loadJS(sendPayoutRequest_first);
+                  var latestRequest =JSON.parse(contextVars["private.earthportRequest"]);
+                  contextGetVariableMethod.withArgs("private.originalRequest").returns(JSON.stringify(SendPayoutRequest_Schema.request));
+                  contextGetVariableMethod.withArgs("private.earthportRequest").returns(JSON.stringify(latestRequest));
+                  loadJS(sendPayoutRequest_second);
+                  var latestRequest =JSON.parse(contextVars["private.earthportRequest"]);
+                  contextGetVariableMethod.withArgs("private.originalRequest").returns(JSON.stringify(SendPayoutRequest_Schema.request));
+                  contextGetVariableMethod.withArgs("private.earthportRequest").returns(JSON.stringify(latestRequest));
+                  loadJS(sendPayoutRequest_third);
+                  var latestRequest =JSON.parse(contextVars["request.content"]);
+                  //CASES FOR TYPE -- I  
+                  
+                    if('recipientDetail' in SendPayoutRequest_Schema.request){
+                      if(SendPayoutRequest_Schema.request.recipientDetail.type === 'I'){
+                    var ident_list_I = (latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]['ns13:beneficiaryBankAccount']['ns4:beneficiaryIdentity']['ns3:beneficiaryIndividualIdentity']['ns3:identificationList']['ns3:identification'])
+                    var Send_ident_I = SendPayoutRequest_Schema.request.recipientDetail.identificationList
+                    var cutIT = Send_ident_I.find(val => val.idNumber)
+                    console.log(cutIT)
+                    // var list = ['P','D','N']
+                    // var mapped_list = ['Passport','Driving License','National ID Card']
+                    var logic = ident_list_I.find(obj => obj['ns3:identificationNumber'])
+                        console.log(logic)
+                    if('identificationList' in SendPayoutRequest_Schema.request.recipientDetail){
+                      if(cutIT !== undefined){
+                        if('idNumber' in cutIT){
+                         
+                          expect(logic['ns3:identificationNumber']).to.eql(cutIT.idNumber)
+                        }
+                        else{
+                          expect(logic['ns3:identificationNumber']).to.be.undefined
+                        }
+                      }
+                      else{
+                        expect(logic).to.be.undefined
+                      }
+
+                      
+
+                    }
+                    else{
+                      expect(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]['ns13:beneficiaryBankAccount']['ns4:beneficiaryIdentity']['ns3:beneficiaryIndividualIdentity']['ns3:identificationList']).to.be.undefined
+                    }
+              
+
+                      }
+                      else if(SendPayoutRequest_Schema.request.recipientDetail.type === 'C'){
+                         var ident_list_C = (latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]['ns13:beneficiaryBankAccount']['ns4:beneficiaryIdentity']['ns3:beneficiaryLegalEntityIdentity']['ns3:legalEntityRegistration'])
+                    console.log(ident_list_C)
+                    var Send_ident_C = SendPayoutRequest_Schema.request.recipientDetail.identificationList
+                    var mmm = Send_ident_C.find(val => val.idNumber)
+                    console.log(mmm)
+                        if('identificationList' in SendPayoutRequest_Schema.request.recipientDetail){
+                          if(mmm !== undefined){
+
+                            if(mmm.idType === 'L'){
+                              expect(ident_list_C['ns3:legalEntityRegistrationNumber']).to.eql(mmm.idNumber)
+                            }
+                            else{
+                              expect(ident_list_C).to.be.undefined
+                            }
+                          }
+                        
+                          else{
+                            expect(ident_list_C).to.be.undefined
+                          }
+
+                        }
+                        else{
+                          expect(ident_list_C).to.be.undefined
+                        }
+                      }
+                      else{
+                        expect(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]['ns13:beneficiaryBankAccount']['ns4:beneficiaryIdentity']).to.be.not.undefined;
+
+                      }
+                    }
+                    
 
                   done();
                 }).timeout(5000);
@@ -1109,6 +1302,38 @@ module.exports = {
                 }).timeout(5000);
 
 
+                it('BANK - BANK NAME',(done)=>{
+                  contextGetVariableMethod.withArgs("request.content").returns(JSON.stringify(SendPayoutRequest_Schema.request));
+                  cryptoGetSHA256.withArgs().returns(module.exports={
+                      update:function (){},
+                      digest:function (){return "12345678654sdfghj"}});
+                  _sha256Update.withArgs().returns();
+                  _sha256digest.withArgs().returns();
+                  loadJS(sendPayoutRequest_first);
+                  var latestRequest =JSON.parse(contextVars["private.earthportRequest"]);
+                  contextGetVariableMethod.withArgs("private.originalRequest").returns(JSON.stringify(SendPayoutRequest_Schema.request));
+                  contextGetVariableMethod.withArgs("private.earthportRequest").returns(JSON.stringify(latestRequest));
+                  loadJS(sendPayoutRequest_second);
+                  var latestRequest = JSON.parse(contextVars["private.earthportRequest"]);
+                    var single = (latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]['ns13:beneficiaryBankAccount']['ns4:bankAccountDetails']).filter(obj=>obj['ns4:value']===SendPayoutRequest_Schema.request.recipientDetail.bank.bankName)
+                    var b_name = single.find(val => (val['ns4:key'] === 'bankName' && val['ns4:value'] === SendPayoutRequest_Schema.request.recipientDetail.bank.bankName))
+                    // console.log(b_name)
+
+                    if('recipientDetail' in SendPayoutRequest_Schema.request){
+                      if('bank' in SendPayoutRequest_Schema.request.recipientDetail){
+                        if('bankName' in SendPayoutRequest_Schema.request.recipientDetail.bank){
+                          expect(b_name['ns4:key']).to.eql('bankName');
+                          expect(b_name['ns4:value']).to.eql(SendPayoutRequest_Schema.request.recipientDetail.bank.bankName)
+                        }
+                        else{
+                          expect(b_name).to.be.undefined
+                        }
+                      }
+                    }
+                  done()
+                }).timeout(5000);
+
+
 
                 it('BANK - ACCOUNT NAME',(done)=>{
                   contextGetVariableMethod.withArgs("request.content").returns(JSON.stringify(SendPayoutRequest_Schema.request));
@@ -1126,12 +1351,12 @@ module.exports = {
                 // console.log(JSON.stringify(latestRequest))
                 // console.log(SendPayoutRequest_Schema.request)
                 var single = (latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]['ns13:beneficiaryBankAccount']['ns4:bankAccountDetails']).filter(obj=>obj['ns4:value']===SendPayoutRequest_Schema.request.recipientDetail.bank.accountName)
-                console.log(single)
+                // console.log(single)
                 // console.log(SendPayoutRequest_Schema.request)
 
                 var tryin = single.find(val => (val['ns4:key'] === 'accountName' && val['ns4:value'] === SendPayoutRequest_Schema.request.recipientDetail.bank.accountName))
                 
-                console.log(tryin)
+                // console.log(tryin)
                  if('recipientDetail' in SendPayoutRequest_Schema.request){
                    if('bank' in SendPayoutRequest_Schema.request.recipientDetail){
                      if('accountName' in SendPayoutRequest_Schema.request.recipientDetail.bank){
@@ -1168,52 +1393,100 @@ module.exports = {
 
                     // console.log(SendPayoutRequest_Schema.request)
                   var single = (latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]['ns13:beneficiaryBankAccount']['ns4:bankAccountDetails']).filter(obj=>obj['ns4:value']===SendPayoutRequest_Schema.request.recipientDetail.bank.accountNumber)
-                 console.log(single)
-                 var def = single.find(val => (val['ns4:key'] === 'accountNumber' && val['ns4:value'] === SendPayoutRequest_Schema.request.recipientDetail.bank.accountNumber) )
-                 var iban = single.find(val => (val['ns4:key'] === 'iban' && val['ns4:value'] === SendPayoutRequest_Schema.request.recipientDetail.bank.accountNumber))
+                  var nil = single.find(val => (val['ns4:key'] === 'accountNumber' && val['ns4:value'] === SendPayoutRequest_Schema.request.recipientDetail.bank.accountNumber) )
+
+                  //  console.log(single)
                 //  var get = single.find(val => (val['ns4:key'] === 'accountNumber' && val['ns4:value'] === SendPayoutRequest_Schema.request.recipientDetail.bank.accountNumber) )
 
-                 console.log(def)
-                 console.log(iban)
+                //  console.log(def)
+                //  console.log(iban)
+                //  console.log(single)
                  
                 //  console.log(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]['ns13:beneficiaryBankAccount']['ns4:bankAccountDetails'])
                  
-                  if('recipientDetail' in SendPayoutRequest_Schema.request){
-                    if('bank' in SendPayoutRequest_Schema.request.recipientDetail){
-                      if('accountNumber' in SendPayoutRequest_Schema.request.recipientDetail.bank){
 
+                if('recipientDetail' in SendPayoutRequest_Schema.request){
+                  if('bank' in SendPayoutRequest_Schema.request.recipientDetail){
+                    if('accountNumber' in SendPayoutRequest_Schema.request.recipientDetail.bank){
 
-                  if(SendPayoutRequest_Schema.request.recipientDetail.bank.accountNumberType === 'DEFAULT'){
-                    expect(def['ns4:key']).to.eql('accountNumber');
-                    expect(def['ns4:value']).to.eql(SendPayoutRequest_Schema.request.recipientDetail.bank.accountNumber)
-                  }
-                  else if(def === undefined){
-                    expect(def).to.be.undefined;
+                      
+                      if(SendPayoutRequest_Schema.request.recipientDetail.bank.accountNumberType !== undefined){
 
-                  }
-                   else if(SendPayoutRequest_Schema.request.recipientDetail.bank.accountNumberType === 'IBAN'){
-                     expect(iban['n4:key']).to.eql('iban');
-                     expect(iban['ns4:value']).to.eql(SendPayoutRequest_Schema.request.recipientDetail.bank.accountNumber)
-                   }
-                   else if(iban === undefined){
-                     expect(iban).to.be.undefined
-                   }
-                  else if(!('accountNumberType' in SendPayoutRequest_Schema.request.recipientDetail.bank)){
-                    expect(def['ns4:key']).to.eql('accountNumber');
-                    expect(def['ns4:value']).to.eql(SendPayoutRequest_Schema.request.recipientDetail.bank.accountNumber)
+                        if(SendPayoutRequest_Schema.request.recipientDetail.bank.accountNumberType === 'DEFAULT'){
+                          var def = single.find(val => (val['ns4:key'] === 'accountNumber' || val['ns4:value'] === SendPayoutRequest_Schema.request.recipientDetail.bank.accountNumber) )
+                          console.log(def)
+                          expect(def['ns4:key']).to.eql('accountNumber');
+                          expect(def['ns4:value']).to.eql(SendPayoutRequest_Schema.request.recipientDetail.bank.accountNumber)
+                          
+                        
+                        }
+                        if(SendPayoutRequest_Schema.request.recipientDetail.bank.accountNumberType === 'IBAN'){
+                          var iban = single.find(val => (val['ns4:key'] === 'iban' || val['ns4:value'] === SendPayoutRequest_Schema.request.recipientDetail.bank.accountNumber))
+                          console.log(iban)
+                          expect(iban['ns4:key']).to.eql('iban');
+                          expect(iban['ns4:value']).to.eql(SendPayoutRequest_Schema.request.recipientDetail.bank.accountNumber)
 
+                        }
+
+                      }
+                      else{
+                        var no_ANT = single.find(val => (val['ns4:key'] === 'accountNumber' || val['ns4:value'] === SendPayoutRequest_Schema.request.recipientDetail.bank.accountNumber) )
+                        console.log(no_ANT)
+                        expect(no_ANT['ns4:key']).to.eql('accountNumber')
+                        expect(no_ANT['ns4:value']).to.eql(SendPayoutRequest_Schema.request.recipientDetail.bank.accountNumber)
+
+                      }
+                    }
+                    else{
+                      expect(nil).to.be.undefined
+                    }
                   }
-                  else{
-                    expect(single).to.be.undefined
-                  }
-                }else{
-                  expect(single).to.have.length(0)
                 }
-              }
-            }
-
+           
 
                   done();
+                }).timeout(5000);
+
+
+                it('BANK - BRANCH CODE',(done)=>{
+                  contextGetVariableMethod.withArgs("request.content").returns(JSON.stringify(SendPayoutRequest_Schema.request));
+                  cryptoGetSHA256.withArgs().returns(module.exports={
+                      update:function (){},
+                      digest:function (){return "12345678654sdfghj"}});
+                  _sha256Update.withArgs().returns();
+                  _sha256digest.withArgs().returns();
+                  loadJS(sendPayoutRequest_first);
+                  var latestRequest =JSON.parse(contextVars["private.earthportRequest"]);
+                  contextGetVariableMethod.withArgs("private.originalRequest").returns(JSON.stringify(SendPayoutRequest_Schema.request));
+                  contextGetVariableMethod.withArgs("private.earthportRequest").returns(JSON.stringify(latestRequest));
+                  loadJS(sendPayoutRequest_second);
+                  var latestRequest =JSON.parse(contextVars["private.earthportRequest"]);
+                  contextGetVariableMethod.withArgs("private.originalRequest").returns(JSON.stringify(SendPayoutRequest_Schema.request));
+                  contextGetVariableMethod.withArgs("private.earthportRequest").returns(JSON.stringify(latestRequest));
+                  loadJS(sendPayoutRequest_third);
+                  var latestRequest = JSON.parse(contextVars["private.earthportRequest"]);
+                  
+
+                  // console.log(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"])
+                    var single = (latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]['ns13:beneficiaryBankAccount']['ns4:bankAccountDetails']).filter(obj=>obj['ns4:value']===SendPayoutRequest_Schema.request.recipientDetail.bank.branchCode)
+                    // console.log(branch_name)
+
+                    if('recipientDetail' in SendPayoutRequest_Schema.request){
+                      if('bank' in SendPayoutRequest_Schema.request.recipientDetail){
+                        if('branchCode' in SendPayoutRequest_Schema.request.recipientDetail.bank){
+                          var branch_name = single.find(val => (val['ns4:key'] === 'branchCode' || val['ns4:value'] === SendPayoutRequest_Schema.request.recipientDetail.bank.branchCode))
+                          console.log(branch_name)
+                          expect(branch_name['ns4:key']).to.eql('branchCode');
+                          expect(branch_name['ns4:value']).to.eql(SendPayoutRequest_Schema.request.recipientDetail.bank.branchCode)
+                        }
+                        else{
+                          var nil_branchCode = single.find(val => (val['ns4:key'] === 'branchCode' || val['ns4:value'] === SendPayoutRequest_Schema.request.recipientDetail.bank.branchCode))
+                          console.log(nil_branchCode)
+                          expect(nil_branchCode).to.be.undefined
+                        }
+                      }
+                    }
+                  done()
                 }).timeout(5000);
     
             })
@@ -1242,4 +1515,6 @@ function loadJS(fileName) {
    delete require.cache[require.resolve(module)];
    return require(module);
   }
+  
+
   
