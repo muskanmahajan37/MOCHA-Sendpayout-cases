@@ -12,7 +12,6 @@
     //skip identificationList code according to Country
     function skipIdentificationList(idType,country){
         var out_skip_identificationList=skip_identificationList.find(o => (o.idType === idType  && o.Country === country));
-        print(out_skip_identificationList);
           if(out_skip_identificationList) {
             return false ;
           }
