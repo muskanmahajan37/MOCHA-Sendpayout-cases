@@ -12,11 +12,11 @@ var recipientDetail_testCases=require('./Cases/recipientDetail_testCases');
 var senderDetail_testCases = require('./Cases/senderDetail_testCases');
 
 
-// describe('Cases for transaction mapping', () => {
-//   data_JSON.forEach(async function(value,i){
-//     transactionDetails_testCases.cases(value,i);
-//   })
-// })
+describe('Cases for transaction mapping', () => {
+  data_JSON.forEach(async function(value,i){
+    transactionDetails_testCases.cases(value,i);
+  })
+})
 
 
 
@@ -27,8 +27,8 @@ describe('Cases for RECIPIENT DETAIL',()=> {
 })
 
 
-// describe('Cases for SENDER DETAIL', ()=>{
-//   data_JSON.forEach(async function(value,i){
-//     senderDetail_testCases.cases(value,i);
-//   })
-// })
+describe('Cases for SENDER DETAIL', ()=>{
+  data_JSON.forEach(async function(value,i){
+    senderDetail_testCases.cases(value,i);
+  })
+})
