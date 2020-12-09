@@ -638,6 +638,18 @@
 //   return x;
 // }
 
+
+function getKeyFromJArray(array,ns_value,keyValue,ns_key){
+  var object=array.find(key => (key[ns_value] === keyValue));
+  if(object) { return object[ns_key] ; }
+ }
+
+function getValueFromJArray(array,ns_key,keyName,keyValue){
+  var object=array.find(key => (key[ns_key] === keyName));
+    if(object) { return object[keyValue] ; }
+ }
+
+
 var chai = require('chai');
 var expect = require("chai").expect;
 var should = require('chai').should();
@@ -708,7 +720,8 @@ module.exports = {
                   contextGetVariableMethod.withArgs("private.earthportRequest").returns(JSON.stringify(latestRequest));
                   loadJS(sendPayoutRequest_second);
                   var latestRequest =JSON.parse(contextVars["private.earthportRequest"]);
-
+                  
+                    
                   if("transactionDetail" in SendPayoutRequest_Schema.request){
                      if("statementNarrative" in SendPayoutRequest_Schema.request.transactionDetail){
                       expect(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryStatementNarrative"]).to.equal(SendPayoutRequest_Schema.request.transactionDetail.statementNarrative)
@@ -924,10 +937,7 @@ module.exports = {
                 contextGetVariableMethod.withArgs("private.earthportRequest").returns(JSON.stringify(latestRequest));
                 loadJS(sendPayoutRequest_second);
                 var latestRequest =JSON.parse(contextVars["private.earthportRequest"]);
-                console.log(SendPayoutRequest_Schema.request)
-                // console.log(JSON.stringify(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:serviceLevel"]))
-                // console.log((SendPayoutRequest_Schema.request.transactionDetail.payoutSpeed).toLowerCase())
-
+                
                 if('transactionDetail' in SendPayoutRequest_Schema.request){
                   if('payoutSpeed' in SendPayoutRequest_Schema.request.transactionDetail){
                     if((SendPayoutRequest_Schema.request.transactionDetail.payoutSpeed) == 'premium'){
@@ -975,7 +985,7 @@ module.exports = {
 
                   }
                   else{
-                    expect(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:merchantUserIdentity"]).to.be.undefined;
+                    expect(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:merchantUserIdentity"]).to.equal("12345678654sdfghj");
                   }
                 }
 
@@ -985,38 +995,178 @@ module.exports = {
               }).timeout(5000);
 
 
-              // it('PurposeOfPayment',(done)=>{
-              //   contextGetVariableMethod.withArgs("request.content").returns(JSON.stringify(SendPayoutRequest_Schema.request));
-              //   cryptoGetSHA256.withArgs().returns(module.exports={
-              //       update:function (){},
-              //       digest:function (){return "12345678654sdfghj"}});
-              //   _sha256Update.withArgs().returns();
-              //   _sha256digest.withArgs().returns();
-              //   loadJS(sendPayoutRequest_first);
-              //   var latestRequest =JSON.parse(contextVars["private.earthportRequest"]);
-              //   contextGetVariableMethod.withArgs("private.originalRequest").returns(JSON.stringify(SendPayoutRequest_Schema.request));
-              //   contextGetVariableMethod.withArgs("private.earthportRequest").returns(JSON.stringify(latestRequest));
-              //   loadJS(sendPayoutRequest_second);
-              //   var latestRequest =JSON.parse(contextVars["private.earthportRequest"]);
-              //   contextGetVariableMethod.withArgs("private.originalRequest").returns(JSON.stringify(SendPayoutRequest_Schema.request));
-              //   contextGetVariableMethod.withArgs("private.earthportRequest").returns(JSON.stringify(latestRequest));
-              //   loadJS(sendPayoutRequest_third);
-              //  var latestRequest =JSON.parse(contextVars["request.content"]);
-              //   if('transactionDetail' in SendPayoutRequest_Schema.request){
-              // // if('purposeOfPayment' in SendPayoutRequest_Schema.request.transactionDetail){
-              // //       expect(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:payoutDetails"]).to.be.an('array').that.contains.something.like([{"ns8:key": "PURPOSE_OF_PAYMENT","ns8:value":SendPayoutRequest_Schema.request.transactionDetail.purposeOfPayment}]);
-                  
-              // var filter = 
+               //#region PURPOSE OF PAYMENT                
+               it('PAYOUTDETAILS - PURPOSE OF PAYMENT',(done)=>{
+                contextGetVariableMethod.withArgs("request.content").returns(JSON.stringify(SendPayoutRequest_Schema.request));
+                cryptoGetSHA256.withArgs().returns(module.exports={
+                    update:function (){},
+                    digest:function (){return "12345678654sdfghj"}});
+                _sha256Update.withArgs().returns();
+                _sha256digest.withArgs().returns();
+                loadJS(sendPayoutRequest_first);
+                var latestRequest =JSON.parse(contextVars["private.earthportRequest"]);
+                contextGetVariableMethod.withArgs("private.originalRequest").returns(JSON.stringify(SendPayoutRequest_Schema.request));
+                contextGetVariableMethod.withArgs("private.earthportRequest").returns(JSON.stringify(latestRequest));
+                loadJS(sendPayoutRequest_second);
+                var latestRequest = JSON.parse(contextVars["private.earthportRequest"]);
+                contextGetVariableMethod.withArgs("private.originalRequest").returns(JSON.stringify(SendPayoutRequest_Schema.request));
+                contextGetVariableMethod.withArgs("private.earthportRequest").returns(JSON.stringify(latestRequest));
+                loadJS(sendPayoutRequest_third);
+                var latestRequest = JSON.parse(contextVars["request.content"]);
                 
-              // //       //gotta work on else case as well 
+               
+                var payoutDetailsArray = latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:payoutDetails"];
+                if(Array.isArray(payoutDetailsArray)){
+                  if('transactionDetail' in SendPayoutRequest_Schema.request){
+                    if("purposeOfPayment" in SendPayoutRequest_Schema.request.transactionDetail){
+                      aryValue=getValueFromJArray(payoutDetailsArray,'ns8:key','PURPOSE_OF_PAYMENT','ns8:value');
+                      aryKey=getKeyFromJArray(payoutDetailsArray,'ns8:value',SendPayoutRequest_Schema.request.transactionDetail.purposeOfPayment,'ns8:key');
+                      expect(aryKey).to.eql('PURPOSE_OF_PAYMENT');
+                      expect(aryValue).to.eql(SendPayoutRequest_Schema.request.transactionDetail.purposeOfPayment)
+                    }
+                  }
+                }
+                 done();
+                }).timeout(5000);
+              //#endregion
+
+
+              it('PAYOUTDETAILS - FUNDING_CURRENCY',(done)=>{
+                  contextGetVariableMethod.withArgs("request.content").returns(JSON.stringify(SendPayoutRequest_Schema.request));
+                  cryptoGetSHA256.withArgs().returns(module.exports={
+                      update:function (){},
+                      digest:function (){return "12345678654sdfghj"}});
+                  _sha256Update.withArgs().returns();
+                  _sha256digest.withArgs().returns();
+                  loadJS(sendPayoutRequest_first);
+                  var latestRequest =JSON.parse(contextVars["private.earthportRequest"]);
+                  contextGetVariableMethod.withArgs("private.originalRequest").returns(JSON.stringify(SendPayoutRequest_Schema.request));
+                  contextGetVariableMethod.withArgs("private.earthportRequest").returns(JSON.stringify(latestRequest));
+                  loadJS(sendPayoutRequest_second);
+                  var latestRequest = JSON.parse(contextVars["private.earthportRequest"]);
+                  contextGetVariableMethod.withArgs("private.originalRequest").returns(JSON.stringify(SendPayoutRequest_Schema.request));
+                  contextGetVariableMethod.withArgs("private.earthportRequest").returns(JSON.stringify(latestRequest));
+                  loadJS(sendPayoutRequest_third);
+                  var latestRequest = JSON.parse(contextVars["request.content"]);
+                 
+                  var payoutDetailsArray = latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:payoutDetails"];
+                  if(Array.isArray(payoutDetailsArray)){
+                    if('transactionDetail' in SendPayoutRequest_Schema.request){
+                      if("settlementCurrencyCode" in SendPayoutRequest_Schema.request.transactionDetail){
+                         //here not checking key beacuse to find we have to send value but value can be similar in array object.
+                        aryValue=getValueFromJArray(payoutDetailsArray,'ns8:key','FUNDING_CURRENCY','ns8:value');
+                        expect(aryValue).to.eql(getCurrencyCode(SendPayoutRequest_Schema.request.transactionDetail.settlementCurrencyCode));
+                      }
+                    }
+                  }
+                   done();
+                  }).timeout(5000);
+                //#endregion
+
+                //#region ORIGINATOR_DETAIL_ACQUIRER_COUNTRY_CODE                
+                it('PAYOUTDETAILS - ORIGINATOR_DETAIL_ACQUIRER_COUNTRY_CODE',(done)=>{
+                  contextGetVariableMethod.withArgs("request.content").returns(JSON.stringify(SendPayoutRequest_Schema.request));
+                  cryptoGetSHA256.withArgs().returns(module.exports={
+                      update:function (){},
+                      digest:function (){return "12345678654sdfghj"}});
+                  _sha256Update.withArgs().returns();
+                  _sha256digest.withArgs().returns();
+                  loadJS(sendPayoutRequest_first);
+                  var latestRequest =JSON.parse(contextVars["private.earthportRequest"]);
+                  contextGetVariableMethod.withArgs("private.originalRequest").returns(JSON.stringify(SendPayoutRequest_Schema.request));
+                  contextGetVariableMethod.withArgs("private.earthportRequest").returns(JSON.stringify(latestRequest));
+                  loadJS(sendPayoutRequest_second);
+                  var latestRequest = JSON.parse(contextVars["private.earthportRequest"]);
+                  contextGetVariableMethod.withArgs("private.originalRequest").returns(JSON.stringify(SendPayoutRequest_Schema.request));
+                  contextGetVariableMethod.withArgs("private.earthportRequest").returns(JSON.stringify(latestRequest));
+                  loadJS(sendPayoutRequest_third);
+                  var latestRequest = JSON.parse(contextVars["request.content"]);
+                 
+                  var payoutDetailsArray = latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:payoutDetails"];
+                
+                  if(Array.isArray(payoutDetailsArray)){
+                      if('originatorDetail' in SendPayoutRequest_Schema.request) {
+                        if ('bankCountryCode' in SendPayoutRequest_Schema.request.originatorDetail) {
+                           //here not checking key beacuse to find we have to send value but value can be similar in array object.
+                        aryValue=getValueFromJArray(payoutDetailsArray,'ns8:key','ORIGINATOR_DETAIL_ACQUIRER_COUNTRY_CODE','ns8:value');
+                        expect(aryValue).to.eql(getCountryCode(SendPayoutRequest_Schema.request.originatorDetail.bankCountryCode));
+                      }
+                    }
+                  }
+                   done();
+                  }).timeout(5000);
+                //#endregion
+
+                //#region ORIGINATOR_DETAIL_MERCHANT_ADDRESS_COUNTRY                
+                it('PAYOUTDETAILS - ORIGINATOR_DETAIL_MERCHANT_ADDRESS_COUNTRY',(done)=>{
+                  contextGetVariableMethod.withArgs("request.content").returns(JSON.stringify(SendPayoutRequest_Schema.request));
+                  cryptoGetSHA256.withArgs().returns(module.exports={
+                      update:function (){},
+                      digest:function (){return "12345678654sdfghj"}});
+                  _sha256Update.withArgs().returns();
+                  _sha256digest.withArgs().returns();
+                  loadJS(sendPayoutRequest_first);
+                  var latestRequest =JSON.parse(contextVars["private.earthportRequest"]);
+                  contextGetVariableMethod.withArgs("private.originalRequest").returns(JSON.stringify(SendPayoutRequest_Schema.request));
+                  contextGetVariableMethod.withArgs("private.earthportRequest").returns(JSON.stringify(latestRequest));
+                  loadJS(sendPayoutRequest_second);
+                  var latestRequest = JSON.parse(contextVars["private.earthportRequest"]);
+                  contextGetVariableMethod.withArgs("private.originalRequest").returns(JSON.stringify(SendPayoutRequest_Schema.request));
+                  contextGetVariableMethod.withArgs("private.earthportRequest").returns(JSON.stringify(latestRequest));
+                  loadJS(sendPayoutRequest_third);
+                  var latestRequest = JSON.parse(contextVars["request.content"]);
+                 
+                  var payoutDetailsArray = latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:payoutDetails"];
+                
+                  if(Array.isArray(payoutDetailsArray)){
+                      if('originatorDetail' in SendPayoutRequest_Schema.request) {
+                        if ('address' in SendPayoutRequest_Schema.request.originatorDetail) {
+                          if("country" in SendPayoutRequest_Schema.request.originatorDetail.address){
+                              //here not checking key beacuse to find we have to send value but value can be similar in array object.
+                              aryValue=getValueFromJArray(payoutDetailsArray,'ns8:key','ORIGINATOR_DETAIL_MERCHANT_ADDRESS_COUNTRY','ns8:value');
+                              expect(aryValue).to.eql(getCountryCode(SendPayoutRequest_Schema.request.originatorDetail.address.country));
+                          }
+                        }
+                    }
+                  }
+                   done();
+                  }).timeout(5000);
+                //#endregion
+
+                //#region ORIGINATOR_DETAIL_INTERMEDIARY_COUNTRY_CODE                
+                it('PAYOUTDETAILS - ORIGINATOR_DETAIL_INTERMEDIARY_COUNTRY_CODE',(done)=>{
+                  contextGetVariableMethod.withArgs("request.content").returns(JSON.stringify(SendPayoutRequest_Schema.request));
+                  cryptoGetSHA256.withArgs().returns(module.exports={
+                      update:function (){},
+                      digest:function (){return "12345678654sdfghj"}});
+                  _sha256Update.withArgs().returns();
+                  _sha256digest.withArgs().returns();
+                  loadJS(sendPayoutRequest_first);
+                  var latestRequest =JSON.parse(contextVars["private.earthportRequest"]);
+                  contextGetVariableMethod.withArgs("private.originalRequest").returns(JSON.stringify(SendPayoutRequest_Schema.request));
+                  contextGetVariableMethod.withArgs("private.earthportRequest").returns(JSON.stringify(latestRequest));
+                  loadJS(sendPayoutRequest_second);
+                  var latestRequest = JSON.parse(contextVars["private.earthportRequest"]);
+                  contextGetVariableMethod.withArgs("private.originalRequest").returns(JSON.stringify(SendPayoutRequest_Schema.request));
+                  contextGetVariableMethod.withArgs("private.earthportRequest").returns(JSON.stringify(latestRequest));
+                  loadJS(sendPayoutRequest_third);
+                  var latestRequest = JSON.parse(contextVars["request.content"]);
                   
-              // //   }
-              // }
-              
-
-              //   done();
-
-              // }).timeout(5000);
+                  var payoutDetailsArray = latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:payoutDetails"];
+                
+                  if(Array.isArray(payoutDetailsArray)){
+                      if('originatorDetail' in SendPayoutRequest_Schema.request) {
+                        if ('intermediaryCountryCode' in SendPayoutRequest_Schema.request.originatorDetail) {
+                              //here not checking key beacuse to find we have to send value but value can be similar in array object.
+                              aryValue=getValueFromJArray(payoutDetailsArray,'ns8:key','ORIGINATOR_DETAIL_INTERMEDIARY_COUNTRY_CODE','ns8:value');
+                              
+                              expect(aryValue).to.eql(getCountryCode(SendPayoutRequest_Schema.request.originatorDetail.intermediaryCountryCode));
+                          }
+                       }
+                  }
+                    done();
+                  }).timeout(5000);
+                //#endregion
           
           })
         }
