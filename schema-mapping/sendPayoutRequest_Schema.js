@@ -6,7 +6,9 @@ module.exports = {
             "bankCountryCode": "840",
             "originatorId": "CAIDCode77765",
             "originatorName": "VPL Postman Test",
+            "originatorBIC":"423424",
             "originatorCustomerName": "Star Bucks",
+            "intermediaryCountryCode":"USA",
             "bankName": "Bank of America",
             "bankBIC":"1234567",
             "address": {
@@ -104,14 +106,15 @@ module.exports = {
             }
         },    
     set payload (data){
-            // console.log(data);
 
       data.OD_bankId!=""?this.originatorDetail.bankId=data.OD_bankId:delete this.originatorDetail.bankdId;
       data.OD_bankCountryCode!=""?this.originatorDetail.bankCountryCode=data.OD_bankCountryCode:delete this.originatorDetail.bankCountryCode;
       data.OD_originatorId!=""?this.originatorDetail.originatorId=data.OD_originatorId:delete this.originatorDetail.originatorId;
       data.OD_originatorName!=""?this.originatorDetail.originatorName=data.OD_originatorName:delete this.originatorDetail.originatorName;
+      data.OD_originatorBIC!="" ? this.originatorDetail.originatorBIC = data.OD_originatorBIC : delete this.originatorDetail.originatorBIC;
       data.OD_bankName!=""?this.originatorDetail.bankName=data.OD_bankName:delete this.originatorDetail.bankName;
       data.OD_originatorCustomerName!=""?this.originatorDetail.originatorCustomerName=data.OD_originatorCustomerName:delete this.originatorDetail.originatorCustomerName;
+      data.OD_intermediaryCountryCode!="" ? this.originatorDetail.intermediaryCountryCode = data.OD_intermediaryCountryCode : delete this.originatorDetail.intermediaryCountryCode;
       data.OD_bankBIC!=""?this.originatorDetail.bankBIC=data.OD_bankBIC:delete this.originatorDetail.bankBIC;
       data.OD_address_addressLine!=""?this.originatorDetail.address.addressLine=data.OD_address_addressLine:delete this.originatorDetail.address.addressLine;
       data.OD_address_stateOrProvinceCode!=""?this.originatorDetail.address.stateOrProvinceCode=data.OD_address_stateOrProvinceCode:delete this.originatorDetail.address.stateOrProvinceCode;
@@ -140,119 +143,129 @@ module.exports = {
       data.RD_type!=""?this.recipientDetail.type = data.RD_type:delete this.recipientDetail.type;
 
 
-// //#region additionalData
-// RD_additionalData_name=data.RD_additionalData_name.split("-");
+//#region additionalData
+if('additionalData' in this.recipientDetail){
 
-// if (Array.isArray(RD_additionalData_name)) {
-//   RD_additionalData_name_Length=RD_additionalData_name.length;
+RD_additionalData_name=data.RD_additionalData_name.split("-");
+if (Array.isArray(RD_additionalData_name)) {
+  RD_additionalData_name_Length=RD_additionalData_name.length;
 
-//   for(var i=0;i<RD_additionalData_name_Length;i++){
+  for(var i=0;i<RD_additionalData_name_Length;i++){
 
-//       if(typeof this.recipientDetail.additionalData[i] !== 'object'){
-//           this.recipientDetail.additionalData[i]={};
-//       }
+      if(typeof this.recipientDetail.additionalData[i] !== 'object'){
+          this.recipientDetail.additionalData[i]={};
+      }
       
-//       this.recipientDetail.additionalData[i].name="dummy_Name";
-//       RD_additionalData_name[i]!=""?this.recipientDetail.additionalData[i].name=RD_additionalData_name[i]:delete this.recipientDetail.additionalData[i].name;
-//   }
-// }
-
-// RD_additionalData_value=data.RD_additionalData_value.split("-");
-
-// if (Array.isArray(RD_additionalData_value)) {
-//   RD_additionalData_value_Length=RD_additionalData_value.length;
-  
-
-//   for(var i=0;i<RD_additionalData_value_Length;i++){
-//       if(typeof this.recipientDetail.additionalData[i] !== 'object'){
-//           this.recipientDetail.additionalData[i]={};
-//       }
-//       this.recipientDetail.additionalData[i].value="dummy_value";
-//       RD_additionalData_value[i]!=""?this.recipientDetail.additionalData[i].value=RD_additionalData_value[i]:delete this.recipientDetail.additionalData[i].value;
-//   }
-// }
-
-// //delete additionalData if its objects are empty
-// if("additionalData" in this.recipientDetail){
-//   ADlength=this.recipientDetail.additionalData.length;
-//   if(ADlength === 1){
-//       if(this.recipientDetail.additionalData[0].name === undefined && this.recipientDetail.additionalData[0].value ===undefined){
-//           console.log(this.recipientDetail.additionalData[0].name);
-//           delete this.recipientDetail.additionalData;
-//       }
-
-//   }
-
-// }
-
-// //#endregion
-
-//#region  identificationList
-RD_identList_idType=data.RD_identList_idType.split("-");
-
-if (Array.isArray(RD_identList_idType)) {
-    RD_idType_Length=RD_identList_idType.length;
-
-    for(var i=0;i<RD_idType_Length;i++){
-      if(typeof this.recipientDetail.identificationList[i] !== 'object'){
-         this.recipientDetail.identificationList[i]={};
-      }
-      this.recipientDetail.identificationList[i].idType="dummy_idType";
-      RD_identList_idType[i]!=""?this.recipientDetail.identificationList[i].idType=RD_identList_idType[i]:delete this.recipientDetail.identificationList[i].idType;
-    }
-}
-
-RD_identList_idName=data.RD_identList_idName.split("-");
-
-if(Array.isArray(RD_identList_idName)){
-  RD_idName_Length=RD_identList_idName.length;
-
-  for(var i=0;i<RD_idName_Length;i++){
-      if(typeof this.recipientDetail.identificationList[i] !== 'object'){
-          this.recipientDetail.identificationList[i]={};
-      }
-      this.recipientDetail.identificationList[i].idName="dummy_idName";
-      RD_identList_idName[i]!=""?this.recipientDetail.identificationList[i].idName=RD_identList_idName[i]:delete this.recipientDetail.identificationList[i].idName;
-    }
-}
-
-RD_identList_idNumber=data.RD_identList_idNumber.split("-");
-
-if(Array.isArray(RD_identList_idNumber)){
-  RD_identList_idNumber_Length=RD_identList_idNumber.length;
-
-  for(var i=0;i<RD_identList_idNumber_Length;i++){
-      if(typeof this.recipientDetail.identificationList[i] !== 'object'){
-          this.recipientDetail.identificationList[i]={};
-      }
-      this.recipientDetail.identificationList[i].idNumber="dummy_idNumber";
-      RD_identList_idNumber[i]!=""?this.recipientDetail.identificationList[i].idNumber=RD_identList_idNumber[i]:delete this.recipientDetail.identificationList[i].idNumber;
-    }
-}
-
-RD_identList_idIssueCountry=data.RD_identList_idIssueCountry.split("-");
-
-if(Array.isArray(RD_identList_idIssueCountry)){
-  RD_identList_idIssueCountry_Length=RD_identList_idIssueCountry.length;
-
-  for(var i=0;i<RD_identList_idIssueCountry_Length;i++){
-      if(typeof this.recipientDetail.identificationList[i] !== 'object'){
-          this.recipientDetail.identificationList[i]={};
-      }
-      this.recipientDetail.identificationList[i].idIssueCountry="dummy_idNumber";
-      RD_identList_idIssueCountry[i]!=""?this.recipientDetail.identificationList[i].idIssueCountry=RD_identList_idIssueCountry[i]:delete this.recipientDetail.identificationList[i].idIssueCountry;
-    }
-}
-
-if("identificationList" in this.recipientDetail){
-  identListLength=this.recipientDetail.identificationList.length;
-  
-  if(identListLength === 1){
-      if(this.recipientDetail.identificationList[0].idType === undefined && this.recipientDetail.identificationList[0].idName === undefined && this.recipientDetail.identificationList[0].idNumber === undefined && this.recipientDetail.identificationList[0].idIssueCountry === undefined){
-          delete this.recipientDetail.identificationList;
-      }
+      this.recipientDetail.additionalData[i].name="dummy_Name";
+      RD_additionalData_name[i]!=""?this.recipientDetail.additionalData[i].name=RD_additionalData_name[i]:delete this.recipientDetail.additionalData[i].name;
   }
 }
+
+RD_additionalData_value=data.RD_additionalData_value.split("-");
+
+if (Array.isArray(RD_additionalData_value)) {
+  RD_additionalData_value_Length=RD_additionalData_value.length;
+  
+
+  for(var i=0;i<RD_additionalData_value_Length;i++){
+      if(typeof this.recipientDetail.additionalData[i] !== 'object'){
+          this.recipientDetail.additionalData[i]={};
+      }
+      this.recipientDetail.additionalData[i].value="dummy_value";
+      RD_additionalData_value[i]!=""?this.recipientDetail.additionalData[i].value=RD_additionalData_value[i]:delete this.recipientDetail.additionalData[i].value;
+  }
+}
+}
+
+//delete additionalData if its objects are empty
+if("additionalData" in this.recipientDetail){
+  ADlength=this.recipientDetail.additionalData.length;
+  if(ADlength === 1){
+      if(this.recipientDetail.additionalData[0].name === undefined && this.recipientDetail.additionalData[0].value ===undefined){
+          delete this.recipientDetail.additionalData;
+      }
+
+  }
+
+}
+
+//#endregion
+
+ //#region  identificationList
+ if(data.RD_identList_idType != ""){
+    RD_identList_idType=data.RD_identList_idType.split("-");
+
+    if (Array.isArray(RD_identList_idType)) {
+        RD_idType_Length=RD_identList_idType.length;
+
+        for(var i=0;i<RD_idType_Length;i++){
+          if(typeof this.recipientDetail.identificationList[i] !== 'object'){
+             this.recipientDetail.identificationList[i]={};
+          }
+          this.recipientDetail.identificationList[i].idType="dummy_idType";
+          RD_identList_idType[i]!=""?this.recipientDetail.identificationList[i].idType=RD_identList_idType[i]:delete this.recipientDetail.identificationList[i].idType;
+        }
+    }
+  }
+ 
+  if(data.RD_identList_idName != ""){
+    RD_identList_idName=data.RD_identList_idName.split("-");
+
+    if(Array.isArray(RD_identList_idName)){
+      RD_idName_Length=RD_identList_idName.length;
+
+      for(var i=0;i<RD_idName_Length;i++){
+          if(typeof this.recipientDetail.identificationList[i] !== 'object'){
+              this.recipientDetail.identificationList[i]={};
+          }
+          this.recipientDetail.identificationList[i].idName="dummy_idName";
+          RD_identList_idName[i]!=""?this.recipientDetail.identificationList[i].idName=RD_identList_idName[i]:delete this.recipientDetail.identificationList[i].idName;
+        }
+    }    
+  }
+  
+  if(data.RD_identList_idNumber != ""){
+    RD_identList_idNumber=data.RD_identList_idNumber.split("-");
+
+    if(Array.isArray(RD_identList_idNumber)){
+      RD_identList_idNumber_Length=RD_identList_idNumber.length;
+
+      for(var i=0;i<RD_identList_idNumber_Length;i++){
+          if(typeof this.recipientDetail.identificationList[i] !== 'object'){
+              this.recipientDetail.identificationList[i]={};
+          }
+          this.recipientDetail.identificationList[i].idNumber="dummy_idNumber";
+          RD_identList_idNumber[i]!=""?this.recipientDetail.identificationList[i].idNumber=RD_identList_idNumber[i]:delete this.recipientDetail.identificationList[i].idNumber;
+        }
+    }
+
+  } 
+
+  if(data.RD_identList_idIssueCountry != ""){
+    RD_identList_idIssueCountry=data.RD_identList_idIssueCountry.split("-");
+
+    if(Array.isArray(RD_identList_idIssueCountry)){
+      RD_identList_idIssueCountry_Length=RD_identList_idIssueCountry.length;
+
+      for(var i=0;i<RD_identList_idIssueCountry_Length;i++){
+          if(typeof this.recipientDetail.identificationList[i] !== 'object'){
+              this.recipientDetail.identificationList[i]={};
+          }
+          this.recipientDetail.identificationList[i].idIssueCountry="dummy_idNumber";
+          RD_identList_idIssueCountry[i]!=""?this.recipientDetail.identificationList[i].idIssueCountry=RD_identList_idIssueCountry[i]:delete this.recipientDetail.identificationList[i].idIssueCountry;
+        }
+    }
+  }
+
+  if("identificationList" in this.recipientDetail){
+    identListLength=this.recipientDetail.identificationList.length;
+    
+    if(identListLength === 1){
+        if(this.recipientDetail.identificationList[0].idType === undefined && this.recipientDetail.identificationList[0].idName === undefined && this.recipientDetail.identificationList[0].idNumber === undefined && this.recipientDetail.identificationList[0].idIssueCountry === undefined){
+            delete this.recipientDetail.identificationList;
+        }
+    }
+  }
 
 //#endregion
       
@@ -307,110 +320,122 @@ if("identificationList" in this.recipientDetail){
       data.SD_dateOfBirth!=""?this.senderDetail.dateOfBirth = data.SD_dateOfBirth:delete this.senderDetail.dateOfBirth;
     
     
-//     //#region additionalData
-//     SD_additionalData_name=data.SD_additionalData_name.split("-");
+    //#region additionalData
+if('additionalData' in this.senderDetail){
 
-//     if (Array.isArray(SD_additionalData_name)) {
-//       SD_additionalData_name_Length=SD_additionalData_name.length;
+    SD_additionalData_name=data.SD_additionalData_name.split("-");
 
-//       for(var i=0;i<SD_additionalData_name_Length;i++){
+    if (Array.isArray(SD_additionalData_name)) {
+      SD_additionalData_name_Length=SD_additionalData_name.length;
 
-//           if(typeof this.senderDetail.additionalData[i] !== 'object'){
-//               this.senderDetail.additionalData[i]={};
-//           }
+      for(var i=0;i<SD_additionalData_name_Length;i++){
+
+          if(typeof this.senderDetail.additionalData[i] !== 'object'){
+              this.senderDetail.additionalData[i]={};
+          }
           
-//           this.senderDetail.additionalData[i].name="dummy_Name";
-//           SD_additionalData_name[i]!=""?this.senderDetail.additionalData[i].name=SD_additionalData_name[i]:delete this.senderDetail.additionalData[i].name;
-//       }
-//   }
+          this.senderDetail.additionalData[i].name="dummy_Name";
+          SD_additionalData_name[i]!=""?this.senderDetail.additionalData[i].name=SD_additionalData_name[i]:delete this.senderDetail.additionalData[i].name;
+      }
+  }
 
-//     SD_additionalData_value=data.SD_additionalData_value.split("-");
+    SD_additionalData_value=data.SD_additionalData_value.split("-");
 
-//     if (Array.isArray(SD_additionalData_value)) {
-//       SD_additionalData_value_Length=SD_additionalData_value.length;
+    if (Array.isArray(SD_additionalData_value)) {
+      SD_additionalData_value_Length=SD_additionalData_value.length;
       
 
-//       for(var i=0;i<SD_additionalData_value_Length;i++){
-//           if(typeof this.senderDetail.additionalData[i] !== 'object'){
-//               this.senderDetail.additionalData[i]={};
-//           }
-//           this.senderDetail.additionalData[i].value="dummy_value";
-//           SD_additionalData_value[i]!=""?this.senderDetail.additionalData[i].value=SD_additionalData_value[i]:delete this.senderDetail.additionalData[i].value;
-//       }
-//   }
+      for(var i=0;i<SD_additionalData_value_Length;i++){
+          if(typeof this.senderDetail.additionalData[i] !== 'object'){
+              this.senderDetail.additionalData[i]={};
+          }
+          this.senderDetail.additionalData[i].value="dummy_value";
+          SD_additionalData_value[i]!=""?this.senderDetail.additionalData[i].value=SD_additionalData_value[i]:delete this.senderDetail.additionalData[i].value;
+      }
+  }
+}
+  //delete additionalData if its objects are empty
+  if("additionalData" in this.senderDetail){
+      ADlength=this.senderDetail.additionalData.length;
+      if(ADlength === 1){
+          if(this.senderDetail.additionalData[0].name === undefined && this.senderDetail.additionalData[0].value ===undefined){
+              delete this.senderDetail.additionalData;
+          }
 
-//   //delete additionalData if its objects are empty
-//   if("additionalData" in this.senderDetail){
-//       ADlength=this.senderDetail.additionalData.length;
-//       if(ADlength === 1){
-//           if(this.senderDetail.additionalData[0].name === undefined && this.senderDetail.additionalData[0].value ===undefined){
-//               console.log(this.senderDetail.additionalData[0].name);
-//               delete this.senderDetail.additionalData;
-//           }
+      }
 
-//       }
+  }
 
-//   }
-
-//   //#endregion
+  //#endregion
 
     //#region  identificationList
-    SD_identList_idType=data.SD_identList_idType.split("-");
 
-    if (Array.isArray(SD_identList_idType)) {
-        SD_idType_Length=SD_identList_idType.length;
+    if(data.SD_identList_idType != ""){
+        SD_identList_idType=data.SD_identList_idType.split("-");
 
-        for(var i=0;i<SD_idType_Length;i++){
-          if(typeof this.senderDetail.identificationList[i] !== 'object'){
-             this.senderDetail.identificationList[i]={};
-          }
-          this.senderDetail.identificationList[i].idType="dummy_idType";
-          SD_identList_idType[i]!=""?this.senderDetail.identificationList[i].idType=SD_identList_idType[i]:delete this.senderDetail.identificationList[i].idType;
+        if (Array.isArray(SD_identList_idType)) {
+            SD_idType_Length=SD_identList_idType.length;
+    
+            for(var i=0;i<SD_idType_Length;i++){
+              if(typeof this.senderDetail.identificationList[i] !== 'object'){
+                 this.senderDetail.identificationList[i]={};
+              }
+              this.senderDetail.identificationList[i].idType="dummy_idType";
+              SD_identList_idType[i]!=""?this.senderDetail.identificationList[i].idType=SD_identList_idType[i]:delete this.senderDetail.identificationList[i].idType;
+            }
+        }
+    }
+  
+    if(data.SD_identList_idName != ""){
+        SD_identList_idName=data.SD_identList_idName.split("-");
+
+        if(Array.isArray(SD_identList_idName)){
+          SD_idName_Length=SD_identList_idName.length;
+    
+          for(var i=0;i<SD_idName_Length;i++){
+              if(typeof this.senderDetail.identificationList[i] !== 'object'){
+                  this.senderDetail.identificationList[i]={};
+              }
+              this.senderDetail.identificationList[i].idName="dummy_idName";
+              SD_identList_idName[i]!=""?this.senderDetail.identificationList[i].idName=SD_identList_idName[i]:delete this.senderDetail.identificationList[i].idName;
+            }
+        }
+    }
+  
+    if(data.SD_identList_idNumber != ""){
+        SD_identList_idNumber=data.SD_identList_idNumber.split("-");
+
+        if(Array.isArray(SD_identList_idNumber)){
+          SD_identList_idNumber_Length=SD_identList_idNumber.length;
+    
+          for(var i=0;i<SD_identList_idNumber_Length;i++){
+              if(typeof this.senderDetail.identificationList[i] !== 'object'){
+                  this.senderDetail.identificationList[i]={};
+              }
+              this.senderDetail.identificationList[i].idNumber="dummy_idNumber";
+              SD_identList_idNumber[i]!=""?this.senderDetail.identificationList[i].idNumber=SD_identList_idNumber[i]:delete this.senderDetail.identificationList[i].idNumber;
+            }
         }
     }
 
-    SD_identList_idName=data.SD_identList_idName.split("-");
+ 
+    if(data.SD_identList_idIssueCountry != ""){
+        SD_identList_idIssueCountry=data.SD_identList_idIssueCountry.split("-");
 
-    if(Array.isArray(SD_identList_idName)){
-      SD_idName_Length=SD_identList_idName.length;
-
-      for(var i=0;i<SD_idName_Length;i++){
-          if(typeof this.senderDetail.identificationList[i] !== 'object'){
-              this.senderDetail.identificationList[i]={};
-          }
-          this.senderDetail.identificationList[i].idName="dummy_idName";
-          SD_identList_idName[i]!=""?this.senderDetail.identificationList[i].idName=SD_identList_idName[i]:delete this.senderDetail.identificationList[i].idName;
+        if(Array.isArray(SD_identList_idIssueCountry)){
+          SD_identList_idIssueCountry_Length=SD_identList_idIssueCountry.length;
+    
+          for(var i=0;i<SD_identList_idIssueCountry_Length;i++){
+              if(typeof this.senderDetail.identificationList[i] !== 'object'){
+                  this.senderDetail.identificationList[i]={};
+              }
+              this.senderDetail.identificationList[i].idIssueCountry="dummy_idNumber";
+              SD_identList_idIssueCountry[i]!=""?this.senderDetail.identificationList[i].idIssueCountry=SD_identList_idIssueCountry[i]:delete this.senderDetail.identificationList[i].idIssueCountry;
+            }
         }
     }
 
-    SD_identList_idNumber=data.SD_identList_idNumber.split("-");
-
-    if(Array.isArray(SD_identList_idNumber)){
-      SD_identList_idNumber_Length=SD_identList_idNumber.length;
-
-      for(var i=0;i<SD_identList_idNumber_Length;i++){
-          if(typeof this.senderDetail.identificationList[i] !== 'object'){
-              this.senderDetail.identificationList[i]={};
-          }
-          this.senderDetail.identificationList[i].idNumber="dummy_idNumber";
-          SD_identList_idNumber[i]!=""?this.senderDetail.identificationList[i].idNumber=SD_identList_idNumber[i]:delete this.senderDetail.identificationList[i].idNumber;
-        }
-    }
-
-    SD_identList_idIssueCountry=data.SD_identList_idIssueCountry.split("-");
-
-    if(Array.isArray(SD_identList_idIssueCountry)){
-      SD_identList_idIssueCountry_Length=SD_identList_idIssueCountry.length;
-
-      for(var i=0;i<SD_identList_idIssueCountry_Length;i++){
-          if(typeof this.senderDetail.identificationList[i] !== 'object'){
-              this.senderDetail.identificationList[i]={};
-          }
-          this.senderDetail.identificationList[i].idIssueCountry="dummy_idNumber";
-          SD_identList_idIssueCountry[i]!=""?this.senderDetail.identificationList[i].idIssueCountry=SD_identList_idIssueCountry[i]:delete this.senderDetail.identificationList[i].idIssueCountry;
-        }
-    }
-
+  
    if("identificationList" in this.senderDetail){
       identListLength=this.senderDetail.identificationList.length;
       
@@ -422,7 +447,6 @@ if("identificationList" in this.recipientDetail){
    }
 
   //#endregion
-
     
     
       //   data.SD_identList_idType!=""?this.senderDetail.companyName = data.senderDetail_companyName:delete this.senderDetail.companyName;
