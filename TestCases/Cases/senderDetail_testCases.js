@@ -636,6 +636,16 @@
 
 //#endregion
 
+function getKeyFromJArray(array,ns_value,keyValue,ns_key){
+  var object=array.find(key => (key[ns_value] === keyValue));
+  if(object) { return object[ns_key] ; }
+ }
+
+function getValueFromJArray(array,ns_key,keyName,keyValue){
+  var object=array.find(key => (key[ns_key] === keyName));
+    if(object) { return object[keyValue] ; }
+ }
+
 var chai = require('chai');
 var expect = require("chai").expect;
 var should = require('chai').should();
@@ -745,17 +755,20 @@ module.exports = {
                           contextGetVariableMethod.withArgs("private.earthportRequest").returns(JSON.stringify(latestRequest));
                           loadJS(sendPayoutRequest_second);
                           var latestRequest = JSON.parse(contextVars["private.earthportRequest"]);
-                        //   console.log(SendPayoutRequest_Schema.request.senderDetail)
-                        // console.log(typeof(JSON.stringify(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:payerIdentity"]["ns3:payerIndividualIdentity"])))
+                        
                           
                           if('senderDetail' in SendPayoutRequest_Schema.request){
                               if(SendPayoutRequest_Schema.request.senderDetail.type == 'I'){
-                              if('dateOfBirth' in SendPayoutRequest_Schema.request.senderDetail){
+                              
+                              if('dateOfBirth' in SendPayoutRequest_Schema.request.senderDetail && 'countryOfBirth' in SendPayoutRequest_Schema.request.senderDetail){
                                   expect(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:payerIdentity"]["ns3:payerIndividualIdentity"]["ns3:birthInformation"]["ns3:dateOfBirth"]).to.equal(SendPayoutRequest_Schema.request.senderDetail.dateOfBirth);
                                   expect(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:payerIdentity"]["ns3:payerIndividualIdentity"]["ns3:birthInformation"]["ns3:dateOfBirth"]).to.be.not.undefined;
                                   expect(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:payerIdentity"]["ns3:payerIndividualIdentity"]["ns3:birthInformation"]["ns3:dateOfBirth"]).to.not.equal('');
                                   expect(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:payerIdentity"]["ns3:payerIndividualIdentity"]["ns3:birthInformation"]["ns3:dateOfBirth"]).is.not.null;
 
+                              }
+                              else{
+                                expect(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:payerIdentity"]["ns3:payerIndividualIdentity"]["ns3:birthInformation"]).to.be.undefined
                               }
                             }
                               else if(SendPayoutRequest_Schema.request.senderDetail.type == 'C'){
@@ -781,17 +794,18 @@ module.exports = {
                           contextGetVariableMethod.withArgs("private.earthportRequest").returns(JSON.stringify(latestRequest));
                           loadJS(sendPayoutRequest_second);
                           var latestRequest = JSON.parse(contextVars["private.earthportRequest"]);
-                          // console.log(SendPayoutRequest_Schema.request.senderDetail.countryOfBirth)
-                        // console.log(typeof(JSON.stringify(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:payerIdentity"]["ns3:payerIndividualIdentity"])))
                           
                           if('senderDetail' in SendPayoutRequest_Schema.request){
                               if(SendPayoutRequest_Schema.request.senderDetail.type == 'I'){
-                              if('countryOfBirth' in SendPayoutRequest_Schema.request.senderDetail){
+                              if('countryOfBirth' in SendPayoutRequest_Schema.request.senderDetail && 'dateOfBirth' in SendPayoutRequest_Schema.request.senderDetail){
                                   expect(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:payerIdentity"]["ns3:payerIndividualIdentity"]["ns3:birthInformation"]["ns3:countryOfBirth"]).to.equal(getCountryCode(SendPayoutRequest_Schema.request.senderDetail.countryOfBirth));
                                   expect(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:payerIdentity"]["ns3:payerIndividualIdentity"]["ns3:birthInformation"]["ns3:countryOfBirth"]).to.be.not.undefined;
                                   expect(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:payerIdentity"]["ns3:payerIndividualIdentity"]["ns3:birthInformation"]["ns3:countryOfBirth"]).to.not.equal('');
                                   expect(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:payerIdentity"]["ns3:payerIndividualIdentity"]["ns3:birthInformation"]["ns3:countryOfBirth"]).is.not.null;
 
+                              }
+                              else{
+                                expect(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:payerIdentity"]["ns3:payerIndividualIdentity"]["ns3:birthInformation"]).to.be.undefined;
                               }
                             }
                               else if(SendPayoutRequest_Schema.request.senderDetail.type == 'C'){
@@ -817,11 +831,11 @@ module.exports = {
                           contextGetVariableMethod.withArgs("private.earthportRequest").returns(JSON.stringify(latestRequest));
                           loadJS(sendPayoutRequest_second);
                           var latestRequest = JSON.parse(contextVars["private.earthportRequest"]);
-                        //   console.log(SendPayoutRequest_Schema.request.senderDetail.cityOfBirth)
-                        // console.log((JSON.stringify(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:payerIdentity"]["ns3:payerIndividualIdentity"])))
-                       
+                        
                           if('senderDetail' in SendPayoutRequest_Schema.request){
                               if(SendPayoutRequest_Schema.request.senderDetail.type == 'I'){
+                                if('dateOfBirth' in SendPayoutRequest_Schema.request.senderDetail && 'countryOfBirth' in SendPayoutRequest_Schema.request.senderDetail){
+                                  expect(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:payerIdentity"]["ns3:payerIndividualIdentity"]["ns3:birthInformation"]).to.be.not.undefined
                               if('cityOfBirth' in SendPayoutRequest_Schema.request.senderDetail){
                                   expect(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:payerIdentity"]["ns3:payerIndividualIdentity"]["ns3:birthInformation"]["ns3:cityOfBirth"]).to.equal(SendPayoutRequest_Schema.request.senderDetail.cityOfBirth);
                                   expect(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:payerIdentity"]["ns3:payerIndividualIdentity"]["ns3:birthInformation"]["ns3:cityOfBirth"]).to.be.not.undefined;
@@ -829,6 +843,13 @@ module.exports = {
                                   expect(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:payerIdentity"]["ns3:payerIndividualIdentity"]["ns3:birthInformation"]["ns3:cityOfBirth"]).is.not.null;
 
                               }
+                              else{
+                                expect(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:payerIdentity"]["ns3:payerIndividualIdentity"]["ns3:birthInformation"]["ns3:cityOfBirth"]).to.be.undefined
+                              }
+                            }
+                            else{
+                              expect(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:payerIdentity"]["ns3:payerIndividualIdentity"]["ns3:birthInformation"]).to.be.undefined
+                            }
                             }
                               else if(SendPayoutRequest_Schema.request.senderDetail.type == 'C'){
                                 expect(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:payerIdentity"]["ns3:payerIndividualIdentity"]).to.be.undefined                  
@@ -838,6 +859,214 @@ module.exports = {
                           done();
                   }).timeout(5000);
 
+                  //#region IDENTIFICATIONLIST - IDTYPE                 
+                  it('IDENTIFICATIONLIST - IDTYPE',(done)=>{
+                    contextGetVariableMethod.withArgs("request.content").returns(JSON.stringify(SendPayoutRequest_Schema.request));
+                    cryptoGetSHA256.withArgs().returns(module.exports={
+                        update:function (){},
+                        digest:function (){return "12345678654sdfghj"}});
+                    _sha256Update.withArgs().returns();
+                    _sha256digest.withArgs().returns();
+                    loadJS(sendPayoutRequest_first);
+                    var latestRequest =JSON.parse(contextVars["private.earthportRequest"]);
+                    contextGetVariableMethod.withArgs("private.originalRequest").returns(JSON.stringify(SendPayoutRequest_Schema.request));
+                    contextGetVariableMethod.withArgs("private.earthportRequest").returns(JSON.stringify(latestRequest));
+                    loadJS(sendPayoutRequest_second);
+                    var latestRequest = JSON.parse(contextVars["private.earthportRequest"]);
+
+                    if('senderDetail' in SendPayoutRequest_Schema.request){
+                      if(SendPayoutRequest_Schema.request.senderDetail.type === 'I'){
+                        if(Array.isArray(SendPayoutRequest_Schema.request.senderDetail.identificationList)){
+                          var identificationListArray_Request = SendPayoutRequest_Schema.request.senderDetail.identificationList;
+                          var identificationListArray_Script = latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]['ns13:payerIdentity']['ns3:payerIndividualIdentity']['ns3:identificationList']['ns3:identification'];
+                        
+                          var identificationListArray_Request_length=identificationListArray_Request.length;
+                          
+    
+                          if(identificationListArray_Request_length > 0){
+    
+                            for(var i=0 ; i < identificationListArray_Request_length ; i++){                        
+                              if(identificationListArray_Request[i].idType === "P"){
+                                expect(identificationListArray_Script[i]['ns3:idType']).to.eql("Passport");
+                              }else if(identificationListArray_Request[i].idType === "D"){
+                                expect(identificationListArray_Script[i]['ns3:idType']).to.eql("Driving License");
+                              }else if(identificationListArray_Request[i].idType === "N"){
+                                expect(identificationListArray_Script[i]['ns3:idType']).to.eql("National ID Card");
+                              }else{
+                              expect(identificationListArray_Script[i]['ns3:idType']).to.eql(identificationListArray_Request[i]['idType']);
+                              }
+                            }
+                            }
+                          }
+                      }
+                    }
+                    done();
+                  }).timeout(5000);
+                  //#endregion
+
+                  //#region IDENTIFICATIONLIST - IDNUMBER                 
+                  it('IDENTIFICATIONLIST - IDNUMBER',(done)=>{
+                    contextGetVariableMethod.withArgs("request.content").returns(JSON.stringify(SendPayoutRequest_Schema.request));
+                    cryptoGetSHA256.withArgs().returns(module.exports={
+                        update:function (){},
+                        digest:function (){return "12345678654sdfghj"}});
+                    _sha256Update.withArgs().returns();
+                    _sha256digest.withArgs().returns();
+                    loadJS(sendPayoutRequest_first);
+                    var latestRequest =JSON.parse(contextVars["private.earthportRequest"]);
+                    contextGetVariableMethod.withArgs("private.originalRequest").returns(JSON.stringify(SendPayoutRequest_Schema.request));
+                    contextGetVariableMethod.withArgs("private.earthportRequest").returns(JSON.stringify(latestRequest));
+                    loadJS(sendPayoutRequest_second);
+                    var latestRequest = JSON.parse(contextVars["private.earthportRequest"]);
+
+                    if('senderDetail' in SendPayoutRequest_Schema.request){
+                      if(SendPayoutRequest_Schema.request.senderDetail.type === 'I'){
+                        if(Array.isArray(SendPayoutRequest_Schema.request.senderDetail.identificationList)){
+                          var identificationListArray_Request = SendPayoutRequest_Schema.request.senderDetail.identificationList;
+                          var identificationListArray_Script = latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]['ns13:payerIdentity']['ns3:payerIndividualIdentity']['ns3:identificationList']['ns3:identification'];
+                        
+                          var identificationListArray_Request_length=identificationListArray_Request.length;
+                          
+                          if(identificationListArray_Request_length > 0){
+    
+                            for(var i=0 ; i < identificationListArray_Request_length ; i++){ 
+                              if(SendPayoutRequest_Schema.request.senderDetail.identificationList[i].hasOwnProperty("idNumber")){
+                                expect(identificationListArray_Script[i]['ns3:identificationNumber']).to.eql(identificationListArray_Request[i]['idNumber']);
+                              }else{
+                                expect(identificationListArray_Script[i]['ns3:identificationNumber']).to.be.undefined;
+                              }
+                            }
+    
+                          }
+    
+                        }
+                  
+                      }else if(SendPayoutRequest_Schema.request.senderDetail.type === 'C'){
+                        if(Array.isArray(SendPayoutRequest_Schema.request.senderDetail.identificationList)){
+                          var identificationListArray_Request = SendPayoutRequest_Schema.request.senderDetail.identificationList;
+                          var legalEntityRegistrationObject_Script = latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:payerIdentity"]["ns3:payerLegalEntityIdentity"]["ns3:legalEntityRegistration"];
+                        
+                          var identificationListArray_Request_length=identificationListArray_Request.length;
+                          
+                          if(identificationListArray_Request_length > 0){
+                            if(SendPayoutRequest_Schema.request.senderDetail.identificationList[0].hasOwnProperty("idType")){
+                              if (SendPayoutRequest_Schema.request.senderDetail.identificationList[0].idType === "L") {
+                                if(SendPayoutRequest_Schema.request.senderDetail.identificationList[0].hasOwnProperty("idNumber")){
+                                  expect(legalEntityRegistrationObject_Script["ns3:legalEntityRegistrationNumber"]).to.eql(identificationListArray_Request[0]['idNumber']);
+                                }else{
+                                  expect(legalEntityRegistrationObject_Script["ns3:legalEntityRegistrationNumber"]).to.be.undefined;
+                                }
+                              }
+                            }
+                            }
+                          }
+                      }
+                    }
+                    done();
+                  }).timeout(5000);
+                  //#endregion
+                  
+                  //#region IDENTIFICATIONLIST - IDISSUECOUNTRY                 
+                  it('IDENTIFICATIONLIST - IDISSUECOUNTRY',(done)=>{
+                    contextGetVariableMethod.withArgs("request.content").returns(JSON.stringify(SendPayoutRequest_Schema.request));
+                    cryptoGetSHA256.withArgs().returns(module.exports={
+                        update:function (){},
+                        digest:function (){return "12345678654sdfghj"}});
+                    _sha256Update.withArgs().returns();
+                    _sha256digest.withArgs().returns();
+                    loadJS(sendPayoutRequest_first);
+                    var latestRequest =JSON.parse(contextVars["private.earthportRequest"]);
+                    contextGetVariableMethod.withArgs("private.originalRequest").returns(JSON.stringify(SendPayoutRequest_Schema.request));
+                    contextGetVariableMethod.withArgs("private.earthportRequest").returns(JSON.stringify(latestRequest));
+                    loadJS(sendPayoutRequest_second);
+                    var latestRequest = JSON.parse(contextVars["private.earthportRequest"]);
+
+                    if('senderDetail' in SendPayoutRequest_Schema.request){
+                      if(SendPayoutRequest_Schema.request.senderDetail.type === 'I'){
+                        if(Array.isArray(SendPayoutRequest_Schema.request.senderDetail.identificationList)){
+                          var identificationListArray_Request = SendPayoutRequest_Schema.request.senderDetail.identificationList;
+                          var identificationListArray_Script = latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]['ns13:payerIdentity']['ns3:payerIndividualIdentity']['ns3:identificationList']['ns3:identification'];
+                        
+                          var identificationListArray_Request_length=identificationListArray_Request.length;
+                          
+                          if(identificationListArray_Request_length > 0){
+                            for(var i=0 ; i < identificationListArray_Request_length ; i++){ 
+                              if(SendPayoutRequest_Schema.request.senderDetail.identificationList[i].hasOwnProperty("idIssueCountry")){
+                                expect(identificationListArray_Script[i]['ns3:identificationCountry']).to.eql(getCountryCode(identificationListArray_Request[i]['idIssueCountry']));
+                              }else{
+                              expect(identificationListArray_Script[i]['ns3:identificationCountry']).to.be.undefined;
+                              }
+                            }
+                          }
+                        }
+                      }else if(SendPayoutRequest_Schema.request.senderDetail.type === 'C'){
+                        if(Array.isArray(SendPayoutRequest_Schema.request.senderDetail.identificationList)){
+                          var identificationListArray_Request = SendPayoutRequest_Schema.request.senderDetail.identificationList;
+                          var legalEntityRegistrationObject_Script = latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:payerIdentity"]["ns3:payerLegalEntityIdentity"]["ns3:legalEntityRegistration"];
+                        
+                          var identificationListArray_Request_length=identificationListArray_Request.length;
+                          
+                          if(identificationListArray_Request_length > 0){
+                            if(SendPayoutRequest_Schema.request.senderDetail.identificationList[0].hasOwnProperty("idType")){
+                              if (SendPayoutRequest_Schema.request.senderDetail.identificationList[0].idType === "L") {
+                                if(SendPayoutRequest_Schema.request.senderDetail.identificationList[0].hasOwnProperty("idIssueCountry")){
+                                  expect(legalEntityRegistrationObject_Script["ns3:legalEntityRegistrationCountry"]).to.eql(getCountryCode(identificationListArray_Request[0]['idIssueCountry']));
+                                }else{
+                                  expect(legalEntityRegistrationObject_Script["ns3:legalEntityRegistrationCountry"]).to.be.undefined;
+                                }
+                              }
+                            }
+                            }
+                          }
+                      }
+                    }
+                    done();
+                  }).timeout(5000);
+                  //#endregion
+
+                  //#region ADDITIONAL DATA TO ADDITIONAL DATA                
+                  it('ADDITIONAL DATA TO ADDITIONAL DATA ',(done)=>{
+                    contextGetVariableMethod.withArgs("request.content").returns(JSON.stringify(SendPayoutRequest_Schema.request));
+                    cryptoGetSHA256.withArgs().returns(module.exports={
+                        update:function (){},
+                        digest:function (){return "12345678654sdfghj"}});
+                    _sha256Update.withArgs().returns();
+                    _sha256digest.withArgs().returns();
+                    loadJS(sendPayoutRequest_first);
+                    var latestRequest =JSON.parse(contextVars["private.earthportRequest"]);
+                    contextGetVariableMethod.withArgs("private.originalRequest").returns(JSON.stringify(SendPayoutRequest_Schema.request));
+                    contextGetVariableMethod.withArgs("private.earthportRequest").returns(JSON.stringify(latestRequest));
+                    loadJS(sendPayoutRequest_second);
+                    var latestRequest = JSON.parse(contextVars["private.earthportRequest"]);
+                  
+                    if('senderDetail' in SendPayoutRequest_Schema.request){
+                    
+                      if(Array.isArray(SendPayoutRequest_Schema.request.senderDetail.additionalData)){
+                        var additionalDataArray_Request = SendPayoutRequest_Schema.request.senderDetail.additionalData;
+                        var additionalDataArray_Script = latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]['ns13:payerIdentity']['ns3:additionalDataList']["ns3:additionalData"];
+                        var additionalDataArray_Request_length=additionalDataArray_Request.length;
+
+                        for(var i=0 ; i < additionalDataArray_Request_length ; i++){
+                          aryKey=getKeyFromJArray(additionalDataArray_Script,'ns3:additionalDataValue',SendPayoutRequest_Schema.request.senderDetail.additionalData[i].value,'ns3:additionalDataKey');
+                          aryValue=getValueFromJArray(additionalDataArray_Script,'ns3:additionalDataKey',SendPayoutRequest_Schema.request.senderDetail.additionalData[i].name,'ns3:additionalDataValue');
+            
+                          if("name" in SendPayoutRequest_Schema.request.senderDetail.additionalData[i]){
+                            expect(aryKey).to.eql(SendPayoutRequest_Schema.request.senderDetail.additionalData[i].name);
+                          }else{
+                            expect(aryKey).to.be.undefined;
+                          }
+
+                          if("value" in SendPayoutRequest_Schema.request.senderDetail.additionalData[i]){
+                            expect(aryValue).to.eql(SendPayoutRequest_Schema.request.senderDetail.additionalData[i].value);
+                          }else{
+                            expect(aryValue).to.be.undefined;
+                          }
+                        }                   
+                      }
+                    } 
+                    done();
+                    }).timeout(5000);
+                  // #endregion
 
 
                   it('ADDRESS -- AddressLine1',(done)=>{
