@@ -10,6 +10,18 @@
         });
       }
   
+      //skip identificationList code according to Country
+      function skipIdentificationList(idType,country){
+          var out_skip_identificationList=skip_identificationList.find(o => (o.idType === idType  && o.Country === country));
+          
+            if(out_skip_identificationList) {
+              return false ;
+            }
+            else {
+              return true ;
+            }
+        }
+        
       //get currency code
       function getCurrencyCode(currency){
         var out_currency=currencyCode.find(o => (o.Num === currency || o.Code === currency));
@@ -103,7 +115,7 @@
   
   //#endregion
   
-//#region lookups
+  //#region lookups
   
    var idType={
     "P": "Passport",
@@ -117,6 +129,7 @@
        "N": "NATIONAL_ID_CARD"
    }
   
+  
    var additionalDataName={
     "PATRONYMIC":"PATRONYMIC_MIDDLE_NAME"
    };
@@ -129,7 +142,7 @@
     "TAX_REF":"TAX_REF"
    };
   
-   var skip_idName={
+   var _idNames={
     "BULSTAT":"BULSTAT",
     "PIN":"PIN",
     "LNC":"LNC",
@@ -152,6 +165,10 @@
     "T":"Tax_ID",
     "F":"FOREIGN_ID"
    };
+   
+    var skip_identificationList =[
+     {"idType":"N" ,"Country":"CR"}
+   ]
   
    var swiftBic_Country={
     "MA":"Morocco",
@@ -631,7 +648,7 @@
    
    
    //#endregion
-  
+    
 
 /**
     1- Contain beneficiaryBankAccount (recipientDetail )
@@ -648,17 +665,14 @@ try {
 
     var dataCount = 0; // for additionalData Increment
     var fullName = false; // for unstructured 
+    var id={}; 
 
 
 
     //#region beneficiaryBankAccount  
     if ('recipientDetail' in request) {
-
-      var dataCount = 0; // for additionalData increment
-
-      if ("fullName" in request.recipientDetail) {
-          fullName = true;
-       }
+      
+       if ("fullName" in request.recipientDetail) {  fullName = true;   }
 
       earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"] = {};
       earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"] = {};
@@ -694,8 +708,8 @@ try {
 
                           if (request.recipientDetail.identificationList[i] !== undefined) {
 
-                              if (request.recipientDetail.identificationList[i].hasOwnProperty("idType") || request.recipientDetail.identificationList[i].hasOwnProperty("idNumber") || request.recipientDetail.identificationList[i].hasOwnProperty("idIssueCountry")) {
-                                  if (Object.keys(idTypeExceptional).indexOf(request.recipientDetail.identificationList[i].idType) === -1) {
+                            if (request.recipientDetail.identificationList[i].hasOwnProperty("idType") || request.recipientDetail.identificationList[i].hasOwnProperty("idNumber") || request.recipientDetail.identificationList[i].hasOwnProperty("idIssueCountry")) {
+                                if ((Object.keys(idTypeExceptional).indexOf(request.recipientDetail.identificationList[i].idType) === -1) && skipIdentificationList(request.recipientDetail.identificationList[i].idType,getCountryCode(request.recipientDetail.bank.countryCode))) {
 
                                       if (request.recipientDetail.identificationList[i].hasOwnProperty("idType") || request.recipientDetail.identificationList[i].hasOwnProperty("idNumber") || request.recipientDetail.identificationList[i].hasOwnProperty("idIssueCountry")) {
                                           earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:beneficiaryIndividualIdentity"]["ns3:identificationList"]["ns3:identification"][j] = {};
@@ -750,7 +764,7 @@ try {
                   earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:beneficiaryIndividualIdentity"]["ns3:birthInformation"]["ns3:dateOfBirth"] = request.recipientDetail.dateOfBirth;
               }
 
-       }else if (request.recipientDetail.type == 'C') {
+      }else if (request.recipientDetail.type == 'C') {
 
           earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:beneficiaryLegalEntityIdentity"] = {};
 
@@ -809,7 +823,7 @@ try {
               earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:beneficiaryLegalEntityIdentity"]["ns3:address"]["ns3:country"] = getCountryCode(request.recipientDetail.address.country);
           }
 
-        }else if((request.recipientDetail.type === undefined) || (request.recipientDetail.type == "I" && fullName)){
+      }else if((request.recipientDetail.type === undefined) || (request.recipientDetail.type == "I" && fullName)){
             //#region RAPI-95 Code
       
             var UID = 0; // increment for unstructuredIdentity array
@@ -818,7 +832,7 @@ try {
            
             if("type" in request.recipientDetail)
             {
-                var id = {
+               id = {
                     "ns3:unstructuredIdentityDataKey": "IdentityType",
                     "ns3:unstructuredIdentityDataValue": request.recipientDetail.type
                 }
@@ -826,68 +840,71 @@ try {
             }
            
             if ("fullName" in request.recipientDetail) {
-                var id = {
+               id = {
                     "ns3:unstructuredIdentityDataKey": "Name",
                     "ns3:unstructuredIdentityDataValue": request.recipientDetail.fullName
                 }
                 earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:beneficiaryUnstructuredIdentity"]["ns3:unstructuredIdentityData"][UID++] = id;
             }
+
             if ("address" in request.recipientDetail) {
                 if ("addressLine1" in request.recipientDetail.address) {
-                    var id = {
+                   id = {
                         "ns3:unstructuredIdentityDataKey": "AddressLine1",
                         "ns3:unstructuredIdentityDataValue": request.recipientDetail.address.addressLine1
                     }
                     earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:beneficiaryUnstructuredIdentity"]["ns3:unstructuredIdentityData"][UID++] = id;
                 }
                 if ("addressLine2" in request.recipientDetail.address) {
-                    var id = {
+                   id = {
                         "ns3:unstructuredIdentityDataKey": "AddressLine2",
                         "ns3:unstructuredIdentityDataValue": request.recipientDetail.address.addressLine2
                     }
                     earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:beneficiaryUnstructuredIdentity"]["ns3:unstructuredIdentityData"][UID++] = id;
                 }
                 if ("addressLine3" in request.recipientDetail.address) {
-                    var id = {
+                   id = {
                         "ns3:unstructuredIdentityDataKey": "AddressLine3",
                         "ns3:unstructuredIdentityDataValue": request.recipientDetail.address.addressLine3
                     }
                     earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:beneficiaryUnstructuredIdentity"]["ns3:unstructuredIdentityData"][UID++] = id;
                 }
                 if ("city" in request.recipientDetail.address) {
-                    var id = {
+                   id = {
                         "ns3:unstructuredIdentityDataKey": "City",
                         "ns3:unstructuredIdentityDataValue": request.recipientDetail.address.city
                     }
                     earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:beneficiaryUnstructuredIdentity"]["ns3:unstructuredIdentityData"][UID++] = id;
                 }
                 if ("province" in request.recipientDetail.address) {
-                    var id = {
+                   id = {
                         "ns3:unstructuredIdentityDataKey": "Province",
                         "ns3:unstructuredIdentityDataValue": request.recipientDetail.address.province
                     }
                     earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:beneficiaryUnstructuredIdentity"]["ns3:unstructuredIdentityData"][UID++] = id;
                 }
                 if ("postalCode" in request.recipientDetail.address) {
-                    var id = {
+                   id = {
                         "ns3:unstructuredIdentityDataKey": "Postcode",
                         "ns3:unstructuredIdentityDataValue": request.recipientDetail.address.postalCode
                     }
                     earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:beneficiaryUnstructuredIdentity"]["ns3:unstructuredIdentityData"][UID++] = id;
                 }
                 if ("country" in request.recipientDetail.address) {
-                    var id = {
+                   id = {
                         "ns3:unstructuredIdentityDataKey": "Country",
                         "ns3:unstructuredIdentityDataValue": getCountryCode(request.recipientDetail.address.country)
                     }
                     earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:beneficiaryUnstructuredIdentity"]["ns3:unstructuredIdentityData"][UID++] = id;
                 }
             }
-       }
+      }
 
       //#endregion
 
-      //#region  AdditionalDataList 
+      //#region  AdditionalDataList - 
+       // AdditionalData is mapped to AdditionalData 
+       // Identitification List is also mapping to AdditionalData like when idType are  T & F or also for some country specific 
 
       // 1) identificationList
       if (Array.isArray(request.recipientDetail.identificationList)) {
@@ -898,31 +915,29 @@ try {
 
               for (var i = 0; i < totalId; i++) {
 
+
                   if (request.recipientDetail.identificationList[i] !== undefined) {
                       if ((request.recipientDetail.identificationList[i].hasOwnProperty("idType") && request.recipientDetail.identificationList[i].hasOwnProperty("idNumber")) || request.recipientDetail.identificationList[i].hasOwnProperty("idName")) {
-                          if (Object.keys(idTypeExceptional).indexOf(request.recipientDetail.identificationList[i].idType) > -1 && Object.keys(skip_idName).indexOf(request.recipientDetail.identificationList[i].idName) == -1) {
+                          if (Object.keys(idTypeExceptional).indexOf(request.recipientDetail.identificationList[i].idType) > -1 && Object.keys(_idNames).indexOf(request.recipientDetail.identificationList[i].idName) == -1) {
                               if (request.recipientDetail.identificationList[i].idType == "F" && request.recipientDetail.identificationList[i].hasOwnProperty("idNumber")) {
                                   if (request.recipientDetail.identificationList[i].hasOwnProperty("idName")) {
-                                      var id = {
+                                     id = {
                                           "ns3:additionalDataKey": request.recipientDetail.identificationList[i].idName,
                                           "ns3:additionalDataValue": request.recipientDetail.identificationList[i].idNumber
                                       };
                                   } else {
-                                      var id = {
+                                     id = {
                                           "ns3:additionalDataKey": "FOREIGN_ID",
                                           "ns3:additionalDataValue": request.recipientDetail.identificationList[i].idNumber
                                       };
                                   }
-                                  earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:additionalDataList"]["ns3:additionalData"][dataCount] = id;
-                                  dataCount++;
-
+                                  earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:additionalDataList"]["ns3:additionalData"][dataCount++] = id;
                               } else if (request.recipientDetail.identificationList[i].hasOwnProperty("idNumber") && request.recipientDetail.identificationList[i].hasOwnProperty("idName")) {
-                                  var id = {
+                                 id = {
                                       "ns3:additionalDataKey": request.recipientDetail.identificationList[i].idName,
                                       "ns3:additionalDataValue": request.recipientDetail.identificationList[i].idNumber
                                   };
-                                  earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:additionalDataList"]["ns3:additionalData"][dataCount] = id;
-                                  dataCount++;
+                                  earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:additionalDataList"]["ns3:additionalData"][dataCount++] = id;
                               }
                           }
                       }
@@ -932,23 +947,21 @@ try {
                           if (request.recipientDetail.identificationList[i].idType == "N") {
                               if (request.recipientDetail.identificationList[i].hasOwnProperty("idIssueCountry")) {
                                   if (getCountryCode(request.recipientDetail.identificationList[i].idIssueCountry) == "CR") {
-                                      var id = {
+                                     id = {
                                           "ns3:additionalDataKey": "NATIONAL_ID_CARD",
                                           "ns3:additionalDataValue": request.recipientDetail.identificationList[i].idNumber
                                       };
-                                      earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:additionalDataList"]["ns3:additionalData"][dataCount] = id;
-                                      dataCount++;
+                                      earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:additionalDataList"]["ns3:additionalData"][dataCount++] = id;
                                   }
 
                               } else if ("bank" in request.recipientDetail) {
                                   if ("countryCode" in request.recipientDetail.bank) {
                                       if (getCountryCode(request.recipientDetail.bank.countryCode) == "CR") {
-                                          var id = {
+                                         id = {
                                               "ns3:additionalDataKey": "NATIONAL_ID_CARD",
                                               "ns3:additionalDataValue": request.recipientDetail.identificationList[i].idNumber
                                           };
-                                          earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:additionalDataList"]["ns3:additionalData"][dataCount] = id;
-                                          dataCount++;
+                                          earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:additionalDataList"]["ns3:additionalData"][dataCount++] = id;
                                       }
                                   }
                               }
@@ -964,7 +977,7 @@ try {
           }
       }
 
-      //#region AdditionalDataList RAPI-95 Code
+      //#region UnstructuredIdentity AdditionalDataList RAPI-95 Code 
       if ((request.recipientDetail.type === undefined) || (request.recipientDetail.type == "I" && fullName )) {
 
           if (!("ns3:additionalDataList" in earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"])) {
@@ -974,7 +987,7 @@ try {
 
           if("dateOfBirth" in request.recipientDetail)
           {
-              var id = {
+             id = {
                   "ns3:additionalDataKey": "DATE_OF_BIRTH",
                   "ns3:additionalDataValue": request.recipientDetail.dateOfBirth
               };
@@ -983,7 +996,7 @@ try {
 
           if("countryOfBirth" in request.recipientDetail)
           {
-              var id = {
+             id = {
                   "ns3:additionalDataKey": "ISO_COUNTRY_CODE_OF_BIRTH",
                   "ns3:additionalDataValue": getCountryCode(request.recipientDetail.countryOfBirth)
               };
@@ -992,7 +1005,7 @@ try {
 
           if("cityOfBirth" in request.recipientDetail)
           {
-              var id = {
+             id = {
                   "ns3:additionalDataKey": "PLACE_OF_BIRTH",
                   "ns3:additionalDataValue": request.recipientDetail.cityOfBirth
               };
@@ -1003,51 +1016,42 @@ try {
               var totalId = request.recipientDetail.identificationList.length;
 
               if (totalId > 0) {
-
                   for (var i = 0; i < totalId; i++) {
-
                       if (request.recipientDetail.identificationList[i] !== undefined) {
-
                           if (request.recipientDetail.identificationList[i].hasOwnProperty("idType") || request.recipientDetail.identificationList[i].hasOwnProperty("idNumber") || request.recipientDetail.identificationList[i].hasOwnProperty("idIssueCountry")) {
-                              if (Object.keys(idTypeExceptional).indexOf(request.recipientDetail.identificationList[i].idType) === -1) {
+                              if ((Object.keys(idTypeExceptional).indexOf(request.recipientDetail.identificationList[i].idType) === -1) && skipIdentificationList(request.recipientDetail.identificationList[i].idType,getCountryCode(request.recipientDetail.bank.countryCode))) {
                                   if (Object.keys(idType).indexOf(request.recipientDetail.identificationList[i].idType) > -1) {
                                       if (request.recipientDetail.identificationList[i].hasOwnProperty("idType")) {
-                                         var id = {
+                                        id = {
                                           "ns3:additionalDataKey": idTypeAdditional[request.recipientDetail.identificationList[i].idType],
-                                        // "ns3:additionalDataKey": "PASSPORT_NUMBER",
                                           "ns3:additionalDataValue": request.recipientDetail.identificationList[i].idNumber
                                          }
-                                         earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:additionalDataList"]["ns3:additionalData"][dataCount] = id;
-                                         dataCount++;
+                                         earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:additionalDataList"]["ns3:additionalData"][dataCount++] = id;
                                       }
-
                                   } else {
                                       if (request.recipientDetail.identificationList[i].hasOwnProperty("idType")) {
-                                          var id = {
+                                         id = {
                                               "ns3:additionalDataKey": request.recipientDetail.identificationList[i].idType,
                                               "ns3:additionalDataValue": request.recipientDetail.identificationList[i].idNumber
                                              }
-                                             earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:additionalDataList"]["ns3:additionalData"][dataCount] = id;
-                                             dataCount++;
+                                             earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:additionalDataList"]["ns3:additionalData"][dataCount++] = id;
                                       }
                                   }
 
                                   if (request.recipientDetail.identificationList[i].hasOwnProperty("idIssueCountry")) {
-                                      var id = {
+                                     id = {
                                           "ns3:additionalDataKey": "ISO_COUNTRY_CODE_ID_ISSUER",
                                           "ns3:additionalDataValue": getCountryCode(request.recipientDetail.identificationList[i].idIssueCountry)
                                          }
-                                         earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:additionalDataList"]["ns3:additionalData"][dataCount] = id;
-                                         dataCount++;
+                                         earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:additionalDataList"]["ns3:additionalData"][dataCount++] = id;
                                   } else {
                                       if ("bank" in request.recipientDetail) {
                                           if ("countryCode" in request.recipientDetail.bank) {
-                                              var id = {
+                                             id = {
                                                   "ns3:additionalDataKey": "ISO_COUNTRY_CODE_ID_ISSUER",
                                                   "ns3:additionalDataValue": getCountryCode(request.recipientDetail.bank.countryCode)
                                                  }
-                                                 earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:additionalDataList"]["ns3:additionalData"][dataCount] = id;
-                                                 dataCount++;
+                                                 earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:additionalDataList"]["ns3:additionalData"][dataCount++] = id;
                                           }
                                       }
                                   }
@@ -1074,12 +1078,11 @@ try {
                   if (request.recipientDetail.additionalData[i] !== undefined) {
 
                       if (Object.keys(skip_additionalDataName).indexOf(request.recipientDetail.additionalData[i].name) == -1) {
-                          var id = {
+                         id = {
                               "ns3:additionalDataKey": (Object.keys(additionalDataName).indexOf(request.recipientDetail.additionalData[i].name) > -1) ? additionalDataName[request.recipientDetail.additionalData[i].name] : request.recipientDetail.additionalData[i].name,
                               "ns3:additionalDataValue": request.recipientDetail.additionalData[i].value
                           };
-                          earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:additionalDataList"]["ns3:additionalData"][dataCount] = id;
-                          dataCount++;
+                          earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:additionalDataList"]["ns3:additionalData"][dataCount++] = id;
                       }
                   }
               }
@@ -1099,12 +1102,11 @@ try {
           if ('bank' in request.recipientDetail) {
               if ("countryCode" in request.recipientDetail.bank) {
                   if (getCountryCode(request.recipientDetail.bank.countryCode) == "TR") {
-                      var id = {
+                     id = {
                           "ns3:additionalDataKey": "INTERNATIONAL_PHONE_NUMBER",
                           "ns3:additionalDataValue": request.recipientDetail.contactNumber
                       };
-                      earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:additionalDataList"]["ns3:additionalData"][dataCount] = id;
-                      dataCount++;
+                      earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:additionalDataList"]["ns3:additionalData"][dataCount++] = id;
                       contactFlag = true;
                   }
               }
@@ -1112,12 +1114,11 @@ try {
           }
 
           if (contactFlag == false) {
-              var id = {
+             id = {
                   "ns3:additionalDataKey": "MOBILE_PHONE_NUMBER",
                   "ns3:additionalDataValue": request.recipientDetail.contactNumber
               };
-              earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:additionalDataList"]["ns3:additionalData"][dataCount] = id;
-              dataCount++;
+              earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:additionalDataList"]["ns3:additionalData"][dataCount++] = id;
           }
       }
 
@@ -1130,14 +1131,12 @@ try {
               earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:additionalDataList"]["ns3:additionalData"] = [];
           }
 
-          var id = {
+         id = {
               "ns3:additionalDataKey": "EMAIL_ADDRESS",
               "ns3:additionalDataValue": request.recipientDetail.contactEmail
           };
 
-          earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:additionalDataList"]["ns3:additionalData"][dataCount] = id;
-          dataCount++;
-
+          earthportrequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:additionalDataList"]["ns3:additionalData"][dataCount++] = id;
       }
 
       //#endregion
