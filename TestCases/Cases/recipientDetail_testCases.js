@@ -646,7 +646,6 @@ function getValueFromJArray(array,ns_key,keyName,keyValue){
   var object=array.find(key => (key[ns_key] === keyName));
     if(object) { return object[keyValue] ; }
  }
-
 var chai = require('chai');
 var expect = require("chai").expect;
 var should = require('chai').should();
@@ -661,6 +660,7 @@ const sendPayoutRequest_third='../../apigee-mapping-scripts/send-payout-to-psp-r
 
 var sinon = require('sinon');
 const { error } = require('console');
+const { isUndefined } = require('util');
 
 var contextVars = {};
 
@@ -705,6 +705,8 @@ module.exports = {
                   });
               
     
+
+                //#region NAME FORMAT
                 it('NAME format Is correct',function (done){
     
                         contextGetVariableMethod.withArgs("request.content").returns(JSON.stringify(SendPayoutRequest_Schema.request));
@@ -719,9 +721,10 @@ module.exports = {
                         contextGetVariableMethod.withArgs("private.earthportRequest").returns(JSON.stringify(latestRequest));
                         loadJS(sendPayoutRequest_second);
                         var latestRequest = JSON.parse(contextVars["private.earthportRequest"]);
+                        console.log(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"])
     
                         if("recipientDetail" in SendPayoutRequest_Schema.request){
-                            if(SendPayoutRequest_Schema.request.recipientDetail.type == 'I'){
+                            if(SendPayoutRequest_Schema.request.recipientDetail.type == 'I' && SendPayoutRequest_Schema.request.recipientDetail.fullName === undefined){
                                 if('firstName' in SendPayoutRequest_Schema.request.recipientDetail){
                                     expect(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:beneficiaryIndividualIdentity"]["ns3:name"]["ns3:givenNames"]).to.equal(SendPayoutRequest_Schema.request.recipientDetail.firstName);
                                 }else{
@@ -733,21 +736,26 @@ module.exports = {
                                 }else{
                                     expect(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:beneficiaryIndividualIdentity"]["ns3:name"]["ns3:familyName"]).to.be.undefined;
                                 }
-                            }else if (SendPayoutRequest_Schema.request.recipientDetail.type == 'C'){
+                            }else if (SendPayoutRequest_Schema.request.recipientDetail.type == 'C' && SendPayoutRequest_Schema.request.recipientDetail.fullName === undefined){
                                 if("companyName" in SendPayoutRequest_Schema.request.recipientDetail){
                                     expect(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:beneficiaryLegalEntityIdentity"]["ns3:legalEntityName"]).to.equal(SendPayoutRequest_Schema.request.recipientDetail.companyName);
                                 }else{
                                     expect(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:beneficiaryLegalEntityIdentity"]["ns3:legalEntityName"]).to.be.undefined;
                                 }
                             }
+                            else if((SendPayoutRequest_Schema.request.recipientDetail.type === undefined && SendPayoutRequest_Schema.request.recipientDetail.fullName !== undefined) || (SendPayoutRequest_Schema.request.recipientDetail.type == 'I' && SendPayoutRequest_Schema.request.recipientDetail.fullName !== undefined)){
+                              expect(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:beneficiaryUnstructuredIdentity"]).to.be.not.undefined
+                            }
         
                         }
               
                   done()      
                 }).timeout(5000);
+                //#endregion
 
 
 
+                //#region  Date of birth
                 it('DateOfBirth',(done)=>{
                   contextGetVariableMethod.withArgs("request.content").returns(JSON.stringify(SendPayoutRequest_Schema.request));
                         cryptoGetSHA256.withArgs().returns(module.exports={
@@ -761,8 +769,9 @@ module.exports = {
                         contextGetVariableMethod.withArgs("private.earthportRequest").returns(JSON.stringify(latestRequest));
                         loadJS(sendPayoutRequest_second);
                         var latestRequest = JSON.parse(contextVars["private.earthportRequest"]);
+                            console.log(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]['ns3:additionalDataList']['ns3:additionalData'])
                         if('recipientDetail' in SendPayoutRequest_Schema.request){
-                          if(SendPayoutRequest_Schema.request.recipientDetail.type == 'I'){
+                          if(SendPayoutRequest_Schema.request.recipientDetail.type == 'I' && SendPayoutRequest_Schema.request.recipientDetail.fullName === undefined){
                           if('dateOfBirth' in SendPayoutRequest_Schema.request.recipientDetail && 'countryOfBirth' in SendPayoutRequest_Schema.request.recipientDetail){
                             
                             // expect(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:beneficiaryIndividualIdentity"]["ns3:birthInformation"]).to.be.an('object');
@@ -776,6 +785,16 @@ module.exports = {
                             expect(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:beneficiaryIndividualIdentity"]["ns3:birthInformation"]).to.be.undefined
                           }
                         }
+                        else if((SendPayoutRequest_Schema.request.recipientDetail.type === undefined && SendPayoutRequest_Schema.request.recipientDetail.fullName === undefined) || (SendPayoutRequest_Schema.request.recipientDetail.type == 'I' && SendPayoutRequest_Schema.request.recipientDetail.fullName !== undefined) || (SendPayoutRequest_Schema.request.recipientDetail.type === undefined && SendPayoutRequest_Schema.request.recipientDetail.fullName !== undefined)){
+                          if('dateOfBirth' in SendPayoutRequest_Schema.request.recipientDetail){
+                            var additionalData_Array = latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]['ns3:additionalDataList']['ns3:additionalData']
+                            aryValue = getValueFromJArray(additionalData_Array,"ns3:additionalDataKey","DATE_OF_BIRTH","ns3:additionalDataValue")
+                            aryKey = getKeyFromJArray(additionalData_Array,"ns3:additionalDataValue",SendPayoutRequest_Schema.request.recipientDetail.dateOfBirth,"ns3:additionalDataKey")
+                            console.log(aryValue,aryKey)
+                            expect(aryKey).to.eql("DATE_OF_BIRTH")
+                            expect(aryValue).to.eql(SendPayoutRequest_Schema.request.recipientDetail.dateOfBirth)
+                          }
+                        }
                           else if(SendPayoutRequest_Schema.request.recipientDetail.type == 'C'){
                             expect(latestRequest.parameters["ns13:createOrUpdateUserAddBeneficiaryBankAccountAndPayout"]["ns13:beneficiaryBankAccount"]["ns4:beneficiaryIdentity"]["ns3:beneficiaryIndividualIdentity"]).to.be.undefined;
                           }
@@ -783,8 +802,10 @@ module.exports = {
                         done();
 
                 }).timeout(5000);
+                //#endregion
 
 
+                //#region CountryOfBirth
                 it('CountryOfBirth',(done)=>{
                   contextGetVariableMethod.withArgs("request.content").returns(JSON.stringify(SendPayoutRequest_Schema.request));
                   cryptoGetSHA256.withArgs().returns(module.exports={
@@ -819,8 +840,10 @@ module.exports = {
 
                   done();
                 }).timeout(5000);
+                //#endregion
 
 
+                //#region CityOfBirth
                 it('CityOfBirth',(done)=>{
                   contextGetVariableMethod.withArgs("request.content").returns(JSON.stringify(SendPayoutRequest_Schema.request));
                   cryptoGetSHA256.withArgs().returns(module.exports={
@@ -862,8 +885,10 @@ module.exports = {
 
                   done();
                 }).timeout(5000);
+                //#endregion
 
 
+                //#region IDENTIFICATIONLIST - IDTYPE
                 it('IDENTIFICATIONLIST - IDTYPE',(done)=>{
                   contextGetVariableMethod.withArgs("request.content").returns(JSON.stringify(SendPayoutRequest_Schema.request));
                   cryptoGetSHA256.withArgs().returns(module.exports={
@@ -907,7 +932,10 @@ module.exports = {
                   }
                   done();
                 }).timeout(5000);
+                //#endregion
 
+               
+                //#region IDENTIFICATIONLIST - IDNUMBER
                 it('IDENTIFICATIONLIST - IDNUMBER',(done)=>{
                   contextGetVariableMethod.withArgs("request.content").returns(JSON.stringify(SendPayoutRequest_Schema.request));
                   cryptoGetSHA256.withArgs().returns(module.exports={
@@ -967,7 +995,10 @@ module.exports = {
                   }
                   done();
                 }).timeout(5000);
+                //#endregion
 
+                
+                //#region IDENTIFICATIONLIST - IDISSUECOUNTRY
                 it('IDENTIFICATIONLIST - IDISSUECOUNTRY',(done)=>{
                   contextGetVariableMethod.withArgs("request.content").returns(JSON.stringify(SendPayoutRequest_Schema.request));
                   cryptoGetSHA256.withArgs().returns(module.exports={
@@ -1032,8 +1063,10 @@ module.exports = {
                   }
                   done();
                 }).timeout(5000);
+                //#endregion
 
 
+                //#region ADDITIONAL DATA TO ADDITIONAL DATA
                 it('ADDITIONAL DATA TO ADDITIONAL DATA ',(done)=>{
                   contextGetVariableMethod.withArgs("request.content").returns(JSON.stringify(SendPayoutRequest_Schema.request));
                   cryptoGetSHA256.withArgs().returns(module.exports={
@@ -1075,9 +1108,11 @@ module.exports = {
                    } 
                    done();
                   }).timeout(5000);
+                  //#endregion
 
 
-                it('ADDRESS -- AddressLine1',(done)=>{
+                  //#region ADDRESS -- AddressLine1
+                  it('ADDRESS -- AddressLine1',(done)=>{
                   contextGetVariableMethod.withArgs("request.content").returns(JSON.stringify(SendPayoutRequest_Schema.request));
                   cryptoGetSHA256.withArgs().returns(module.exports={
                       update:function (){},
@@ -1114,8 +1149,10 @@ module.exports = {
 
                     done()
                 }).timeout(5000);
+                //#endregion
 
 
+                //#region ADDRESS -- AddressLine2
                 it('ADDRESS -- AddressLine2',(done)=>{
                   contextGetVariableMethod.withArgs("request.content").returns(JSON.stringify(SendPayoutRequest_Schema.request));
                   cryptoGetSHA256.withArgs().returns(module.exports={
@@ -1151,10 +1188,12 @@ module.exports = {
 
                   done();
                 }).timeout(5000);
+                //#endregion
 
 
 
 
+                //#region ADDRESS -- AddressLine3
                 it('ADDRESS -- AddressLine3',(done)=>{
                   contextGetVariableMethod.withArgs("request.content").returns(JSON.stringify(SendPayoutRequest_Schema.request));
                   cryptoGetSHA256.withArgs().returns(module.exports={
@@ -1190,9 +1229,11 @@ module.exports = {
 
                   done();
                 }).timeout(5000);
+                //#endregion
 
 
 
+                //#region City
                 it('ADDRESS -- City',(done)=>{
                   contextGetVariableMethod.withArgs("request.content").returns(JSON.stringify(SendPayoutRequest_Schema.request));
                   cryptoGetSHA256.withArgs().returns(module.exports={
@@ -1228,9 +1269,11 @@ module.exports = {
 
                   done();
                 }).timeout(5000);
+                //#endregion
 
 
 
+                //#region Country
                 it('ADDRESS -- Country',(done)=>{
                   contextGetVariableMethod.withArgs("request.content").returns(JSON.stringify(SendPayoutRequest_Schema.request));
                   cryptoGetSHA256.withArgs().returns(module.exports={
@@ -1266,9 +1309,11 @@ module.exports = {
 
                   done();
                 }).timeout(5000);
+                //#endregion
 
 
 
+                //#region Postalcode
                 it('ADDRESS -- PostalCode',(done)=>{
                   contextGetVariableMethod.withArgs("request.content").returns(JSON.stringify(SendPayoutRequest_Schema.request));
                   cryptoGetSHA256.withArgs().returns(module.exports={
@@ -1304,8 +1349,10 @@ module.exports = {
 
                   done();
                 }).timeout(5000);
+                //#endregion
 
 
+                //#region Province
                 it('ADDRESS -- Province',(done)=>{
                   contextGetVariableMethod.withArgs("request.content").returns(JSON.stringify(SendPayoutRequest_Schema.request));
                   cryptoGetSHA256.withArgs().returns(module.exports={
@@ -1344,6 +1391,7 @@ module.exports = {
 
                   done();
                 }).timeout(5000);
+                //#endregion
 
              
 
